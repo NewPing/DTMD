@@ -1,5 +1,5 @@
 <script lang="ts">
-	import '../app.postcss';
+	import '../../app.postcss';
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
 
 	// Floating UI for Popups
@@ -9,12 +9,12 @@
 </script>
 
 <!-- App Shell -->
-<AppShell>
+<AppShell slotSidebarLeft="bg-surface-500/5 w-56 p-4">
 	<svelte:fragment slot="header">
 		<!-- App Bar -->
 		<AppBar>
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Skeleton</strong>
+				<strong class="text-xl uppercase">DTMD</strong>
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				<a
@@ -44,6 +44,16 @@
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
+	<svelte:fragment slot="sidebarLeft">
+	<!-- Insert the list: -->
+	<nav class="list-nav">
+		<ul>
+			<li><a href="/">Home</a></li>
+			<li><a href="/about">About</a></li>
+		</ul>
+	</nav>
+	<!-- --- -->
+</svelte:fragment>
 	<!-- Page Route Content -->
 	<slot />
 </AppShell>
