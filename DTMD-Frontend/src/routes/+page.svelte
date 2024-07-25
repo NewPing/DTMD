@@ -8,7 +8,8 @@
 	h1 {
 		position: relative;
 		text-align: center;
-		font-size: 3vw;
+		font-size: 40px;
+		//font-size: 3vw;
 		top: 5vh;
 	}
 </style>
