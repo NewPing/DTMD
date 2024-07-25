@@ -1,0 +1,7 @@
+Install more integrations with:
+  npx svelte-add
+
+Next steps:
+  1: npm install
+  2: git init && git add -A && git commit -m "Initial commit" (optional)
+  3: npm run dev -- --open
