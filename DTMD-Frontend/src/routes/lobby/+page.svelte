@@ -59,6 +59,8 @@
 						<RadioItem bind:group={numberOfDice} name="justify" value={1}>1</RadioItem>
 						<RadioItem bind:group={numberOfDice} name="justify" value={2}>2</RadioItem>
 						<RadioItem bind:group={numberOfDice} name="justify" value={3}>3</RadioItem>
+                        <RadioItem bind:group={numberOfDice} name="justify" value={4}>4</RadioItem>
+                        <RadioItem bind:group={numberOfDice} name="justify" value={5}>5</RadioItem>
 					</RadioGroup>
 				</div>
 
