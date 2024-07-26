@@ -62,7 +62,7 @@
 		margin-top: 3vh;
 		text-align: center;
 		font-size: 60px;
-		line-height: 6vh;
+		line-height: 60px;
 	}
 
 	input {
