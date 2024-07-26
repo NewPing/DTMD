@@ -8,52 +8,41 @@
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 </script>
 
-<!-- App Shell -->
-<AppShell slotSidebarLeft="bg-surface-500/5 w-56 p-4">
-	<svelte:fragment slot="header">
-		<!-- App Bar -->
-		<AppBar>
-			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">DTMD</strong>
-			</svelte:fragment>
-			<svelte:fragment slot="trail">
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://discord.gg/EXqV7W8MtY"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Discord
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://twitter.com/SkeletonUI"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Twitter
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://github.com/skeletonlabs/skeleton"
-					target="_blank"
-					rel="noreferrer"
-				>
-					GitHub
-				</a>
-			</svelte:fragment>
-		</AppBar>
-	</svelte:fragment>
-	<svelte:fragment slot="sidebarLeft">
-	<!-- Insert the list: -->
-	<nav class="list-nav">
-		<ul>
-			<li><a href="/">Home</a></li>
-			<li><a href="/about">About</a></li>
-		</ul>
-	</nav>
-	<!-- --- -->
-</svelte:fragment>
-	<!-- Page Route Content -->
-	<slot />
-</AppShell>
+
+<div class="grid h-screen grid-rows-[auto_1fr_auto]">
+	<!-- Header -->
+	<header class="bg-surface-100-800-token p-4">
+		<div class = "grid grid-cols-2 gap-4">
+			<div class = "font-bold text-xl">LobbyName</div>
+			<div class = "text-right ">LobbyPin</div>
+		</div>
+	</header>
+	<!-- Grid Columns -->
+	<div class="grid grid-cols-1 md:grid-cols-[auto_1fr]">
+	  <!-- Left Sidebar. -->
+	  <aside class="bg-surface-500/5 p-4 ">
+		<nav class="list-nav">
+			<!-- (optionally you can provide a label here) -->
+			<ul>
+				<li>
+					<!-- svelte-ignore a11y-missing-attribute -->
+					<a class="flex-auto font-medium">
+						<span>Member</span>
+					</a>
+				</li>
+				<!-- ... -->
+			</ul>
+		</nav>
+	  </aside>
+	  <!-- Main Content -->
+	  <main class="space-y-4  p-4">
+		<p class="h-[512px]  p-4">Paragraph 1</p>
+		<p class="h-[512px]  p-4">Paragraph 2</p>
+		<p class="h-[512px]  p-4">Paragraph 3</p>
+	  </main>
+	</div>
+	<!-- Footer -->
+	<footer class="bg-blue-500 p-4">(footer)</footer>
+  </div>
+  
+
