@@ -24,18 +24,22 @@
 	let username = '';
 </script>
 
-<h1>Welcome to DTMD</h1>
+<h1>Dont Touch My Dice!</h1>
 <div class="centeredFrontPageContent">
 	<button
 		class="btn variant-filled"
-		style="margin-top: 30vh; font-size: 20px;"
+		style="margin-top: 20vh; font-size: 20px;"
 		use:popup={popupCreateRoom}>Create Room</button
 	>
 	<button
 	class="btn variant-filled"
 	style="margin-top: 30px; font-size: 20px;"
 	use:popup={popupJoinRoom}>Join Room</button>
+
 </div>
+
+<div class="footer" >Welcome to DTMD, the ultimate online platform for virtual dice games!<br>Create a room, invite a few of your friends and get rolling!</div>
+
 
 <div class="card p-4 w-72 shadow-xl" data-popup="popupCreateRoom">
 	<div class="flex flex-col">
@@ -58,6 +62,7 @@
 		margin-top: 3vh;
 		text-align: center;
 		font-size: 60px;
+		line-height: 6vh;
 	}
 
 	input {
@@ -74,5 +79,14 @@
 		flex-direction: column;
 		justify-content: center;
 		align-items: center;
+		text-align: center;
+	}
+
+	.footer {
+		position: fixed;
+		bottom: 0;
+		margin-bottom: 3vh;
+		width: 100%;
+		text-align: center;
 	}
 </style>
