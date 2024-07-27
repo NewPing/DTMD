@@ -80,6 +80,10 @@
 						<RadioItem bind:group={diceType} name="justify" value={7}>20</RadioItem>
 					</RadioGroup>
 				</div>
+				<!-- Big Number -->
+				<div class = "text-9xl font-medium mt-4">
+					42
+				</div>
 			</div>
 		</main>
 
