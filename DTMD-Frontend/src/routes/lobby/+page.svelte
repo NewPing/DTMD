@@ -81,7 +81,8 @@
 					</RadioGroup>
 				</div>
 				<!-- Big Number -->
-				<div class = "font-medium select-none" style="font-size: 250px; margin-top: 100px">
+				 <div style="margin-top: 130px">&nbsp;</div>
+				<div class = "font-medium select-none" style="font-size: 240px;">
 					42
 				</div>
 			</div>
