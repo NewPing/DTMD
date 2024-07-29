@@ -50,7 +50,7 @@
 		<!-- Main Content -->
 		<main class="space-y-4 p-4 flex h-screen overflow-auto col-span-3">
 			<div class="flex flex-col items-center w-full pt-4">
-				<SlideToggle name="slide" bind:checked={isPrivateMessage}
+				<SlideToggle name="slide" bind:checked={isPrivateMessage} size="sm"
 					>{isPrivateMessage ? 'Private' : 'Public'} Roll</SlideToggle
 				>
 				<div class="pt-7">
@@ -81,18 +81,42 @@
 					</RadioGroup>
 				</div>
 				<!-- Big Number -->
-				<div class = "text-9xl font-medium mt-4">
+				 <div style="margin-top: 130px">&nbsp;</div>
+				<div class = "font-medium select-none" style="font-size: 240px;">
 					42
 				</div>
 			</div>
 		</main>
 
-		<div class="bg-surface-500/5 p-4 flex h-screen overflow-y-auto col-span-2">
-			Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
-			been the industry's standard dummy text ever since the 1500s, when an unknown printer took a
-			galley of type and scrambled it to make a type specimen book. It has survived not only five
-			centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It
-			was
+		<div class="bg-surface-500/5 p-4 h-screen overflow-y-auto col-span-2">
+			<div class="card p-4 variant-soft mb-3">
+				<header class="flex justify-between items-center">
+					<p class="font-bold" style="color: lightblue">AromaticA</p>
+				</header>
+				<p style="overflow-wrap: break-word;">Hello World!</p>
+			</div>
+
+			<div class="card p-4 variant-soft mb-3">
+				<header class="flex justify-between items-center">
+					<p class="font-bold" style="color: lightgreen">JullyJ</p>
+				</header>
+				<p style="overflow-wrap: break-word;">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.</p>
+			</div>
+
+			<div class="card p-4 variant-soft mb-3">
+				<header class="flex justify-between items-center">
+					<p class="font-bold" style="color: lightpink">PeterBliat</p>
+				</header>
+				<p style="overflow-wrap: break-word;">Where does it come from?</p>
+			</div>
+
+			<div class="card p-4 variant-soft mb-3">
+				<header class="flex justify-between items-center">
+					<p class="font-bold" style="color: lightblue">AromaticA</p>
+				</header>
+				<p style="overflow-wrap: break-word;">Contrary to popular belief, Lorem Ipsum is not simply random text.</p>
+			</div>
+			
 		</div>
 	</div>
 	<!-- Footer -->
