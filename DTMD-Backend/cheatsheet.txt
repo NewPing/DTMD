@@ -22,3 +22,6 @@ example:
 // @Failure      404
 // @Failure      500
 // @Router /members [get]
+
+Run svelte:
+npm run dev -- --open

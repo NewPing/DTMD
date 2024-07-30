@@ -9,23 +9,29 @@
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
+	const api = new Api({
+		baseUrl: "http://localhost:8080",
+	});
+
 	let isPrivateMessage: boolean = false;
 	let numberOfDice: number = 1;
 	let diceType: number = 1;
 
-	let memberList : MainMember[] = [];
+	onMount(() => {
 
-	onMount(async () => {
-		const api = new Api({
-			baseUrl: "http://localhost:8080",
-		});
-			
-			
-		const res = await api.members.membersList();
-		memberList = res.data;  // This set the response to the `items` state
 	});
 
+	async function loadMembers(): Promise<MainMember[]> {
+		const res = await api.members.membersList();
+		if (res.ok) {
+			return res.data;
+			
+		} else {
+			throw new Error("Failed to fetch member list");
+		}
+	}
 </script>
+
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
 	<!-- Header -->
@@ -39,16 +45,23 @@
 	<div class="grid grid-cols-6">
 		<div class="bg-surface-500/5 p-4 flex h-screen overflow-y-auto">
 			<nav class="list-nav" style="width: 100%;">
-				<ul>
-					{#each memberList as item, i}
-						<li>
-							<!-- svelte-ignore a11y-missing-attribute -->
-							<a class="flex-auto font-medium">
-								<span>{item.name}</span>
-							</a>
-						</li>
-					{/each}
-				</ul>
+				
+				{#await loadMembers()}
+					<p>Loading members...</p>
+				{:then members}
+					<ul>
+						{#each members as item, i}
+							<li>
+								<!-- svelte-ignore a11y-missing-attribute -->
+								<a class="flex-auto font-medium">
+									<span>{item.name}</span>
+								</a>
+							</li>
+						{/each}
+					</ul>
+				{:catch error}
+					<p style="color: red">Error: {error.message}</p>
+				{/await}
 			</nav>
 		</div>
 
