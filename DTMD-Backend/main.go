@@ -17,12 +17,18 @@ type member struct {
 	Name string `json:"name"`
 }
 
+type lobby struct {
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Members []member `json:"list"`
+}
+
 // albums slice to seed record album data.
-var members = []member{
-	{ID: "1", Name: "AromaticA"},
-	{ID: "2", Name: "HeckLeggedJoe"},
-	{ID: "3", Name: "OnlyNew"},
-	{ID: "4", Name: "Britney"},
+var lobbys = []lobby{
+	{ID: "1", Name: "AromaticA", Members: []member{{ID: "1", Name: "AromaticA"}}},
+	{ID: "2", Name: "HeckLeggedJoe", Members: []member{{ID: "1", Name: "AromaticA"}}},
+	{ID: "3", Name: "OnlyNew", Members: []member{{ID: "1", Name: "AromaticA"}}},
+	{ID: "4", Name: "Britney", Members: []member{{ID: "1", Name: "AromaticA"}}},
 }
 
 func main() {
@@ -48,5 +54,5 @@ func main() {
 // @Failure      500
 // @Router /members [get]
 func getMembers(c *gin.Context) {
-	c.JSON(http.StatusOK, members)
+	c.JSON(http.StatusOK, lobbys[0].Members)
 }
