@@ -23,5 +23,8 @@ example:
 // @Failure      500
 // @Router /members [get]
 
-Run svelte:
+// Run svelte:
 npm run dev -- --open
+
+// generate api code on client side (svelte)
+npx swagger-typescript-api -p http://localhost:8080/swagger/doc.json -o ./src -n dtmd_api.ts
