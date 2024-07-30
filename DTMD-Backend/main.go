@@ -4,7 +4,9 @@ import (
 	_ "DTMD_API/docs" // replace with your actual project path
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
@@ -25,6 +27,7 @@ var members = []member{
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.Default())
 	// Swagger setup
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Routes
