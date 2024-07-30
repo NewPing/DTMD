@@ -4,6 +4,47 @@
         "contact": {}
     },
     "paths": {
+        "/lobbys": {
+            "post": {
+                "description": "creates a new lobby",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lobbys"
+                ],
+                "summary": "Creates a new Lobby",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "lobby name",
+                        "name": "lobbyName",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/members": {
             "get": {
                 "description": "get a list of members",

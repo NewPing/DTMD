@@ -38,6 +38,7 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Routes
 	router.GET("/members", getMembers)
+	router.POST("/lobbys/:lobbyName", createLobby)
 
 	router.Run("localhost:8080")
 }
@@ -55,4 +56,23 @@ func main() {
 // @Router /members [get]
 func getMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, lobbys[0].Members)
+}
+
+// creates a new lobby
+// @Summary      Creates a new Lobby
+// @Description  creates a new lobby
+// @Tags         lobbys
+// @Accept       json
+// @Produce      json
+// @Param lobbyName    header     string  true  "lobby name"
+// @Success      200  {object} int
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router /lobbys [post]
+func createLobby(c *gin.Context) {
+	lobbyName := c.Param("lobbyName")
+	var newLobby = lobby{ID: "1", Name: lobbyName, Members: []member{{ID: "1", Name: "AromaticA"}}}
+	lobbys = append(lobbys, newLobby)
+	c.JSON(http.StatusOK, newLobby.Name)
 }
