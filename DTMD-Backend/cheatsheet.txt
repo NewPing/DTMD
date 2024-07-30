@@ -1,0 +1,24 @@
+swagger parameters
+
+// @Param q    header     string  true  "name search by q"
+
+q := parameter name
+header / body / query
+string := parameter type
+true / false := required yes/no
+"name search by q" := description
+
+
+example:
+// ListAccounts godoc
+// @Summary      List of members
+// @Description  get a list of members
+// @Tags         members
+// @Accept       json
+// @Produce      json
+// @Param q    header     string  true  "name search by q"
+// @Success      200  {array}   main.member
+// @Failure      400
+// @Failure      404
+// @Failure      500
+// @Router /members [get]

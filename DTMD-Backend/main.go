@@ -33,6 +33,16 @@ func main() {
 	router.Run("localhost:8080")
 }
 
+// ListAccounts godoc
+// @Summary      List of members
+// @Description  get a list of members
+// @Tags         members
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   main.member
+// @Failure      400
+// @Failure      404
+// @Failure      500
 // @Router /members [get]
 func getMembers(c *gin.Context) {
 	c.JSON(http.StatusOK, members)

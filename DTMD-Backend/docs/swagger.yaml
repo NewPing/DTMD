@@ -1,7 +1,35 @@
+definitions:
+  main.member:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
   /members:
     get:
-      responses: {}
+      consumes:
+      - application/json
+      description: get a list of members
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.member'
+            type: array
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: List of members
+      tags:
+      - members
 swagger: "2.0"
