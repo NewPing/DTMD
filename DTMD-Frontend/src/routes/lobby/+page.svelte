@@ -1,25 +1,30 @@
 <script lang="ts">
 	import '../../app.postcss';
-	import { AppShell, AppBar, SlideToggle, RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
+	import { SlideToggle, RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
 
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
+	import { Api, type MainMember } from '../../dtmd_api';
+	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
 	let isPrivateMessage: boolean = false;
 	let numberOfDice: number = 1;
 	let diceType: number = 1;
 
-	let lobbyUsers = [
-		'AromaticA',
-		'JullyJ',
-		'JohnWobko',
-		'PeterBliat',
-		'Puta12',
-		'AromaticA',
-		'JullyJ'
-	];
+	let memberList : MainMember[] = [];
+
+	onMount(async () => {
+		const api = new Api({
+			baseUrl: "http://localhost:8080",
+		});
+			
+			
+		const res = await api.members.membersList();
+		memberList = res.data;  // This set the response to the `items` state
+	});
+
 </script>
 
 <div class="grid h-screen grid-rows-[auto_1fr_auto]">
@@ -35,11 +40,11 @@
 		<div class="bg-surface-500/5 p-4 flex h-screen overflow-y-auto">
 			<nav class="list-nav" style="width: 100%;">
 				<ul>
-					{#each lobbyUsers as item, i}
+					{#each memberList as item, i}
 						<li>
 							<!-- svelte-ignore a11y-missing-attribute -->
 							<a class="flex-auto font-medium">
-								<span>{item}</span>
+								<span>{item.name}</span>
 							</a>
 						</li>
 					{/each}
