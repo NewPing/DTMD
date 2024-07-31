@@ -5,7 +5,7 @@
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
-	import { Api, type MainMember } from '../../dtmd_api';
+	import { Api, /*type MainMember*/ } from '../../dtmd_api';
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
@@ -21,7 +21,7 @@
 
 	});
 
-	async function loadMembers(): Promise<MainMember[]> {
+	/*async function loadMembers(): Promise<MainMember[]> {
 		const res = await api.members.membersList();
 		if (res.ok) {
 			return res.data;
@@ -29,7 +29,7 @@
 		} else {
 			throw new Error("Failed to fetch member list");
 		}
-	}
+	}*/
 </script>
 
 
@@ -46,13 +46,13 @@
 		<div class="bg-surface-500/5 p-4 flex h-screen overflow-y-auto">
 			<nav class="list-nav" style="width: 100%;">
 				
-				{#await loadMembers()}
+			<!--	{#await loadMembers()}
 					<p>Loading members...</p>
 				{:then members}
 					<ul>
 						{#each members as item, i}
 							<li>
-								<!-- svelte-ignore a11y-missing-attribute -->
+								<!-- svelte-ignore a11y-missing-attribute
 								<a class="flex-auto font-medium">
 									<span>{item.name}</span>
 								</a>
@@ -61,7 +61,7 @@
 					</ul>
 				{:catch error}
 					<p style="color: red">Error: {error.message}</p>
-				{/await}
+				{/await } -->
 			</nav>
 		</div>
 

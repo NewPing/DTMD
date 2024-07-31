@@ -29,12 +29,12 @@ paths:
         schema:
           $ref: '#/definitions/main.createLobbyRequest'
       produces:
-      - application/json
+      - text/plain
       responses:
         "200":
           description: OK
           schema:
-            type: integer
+            type: string
         "400":
           description: Bad Request
         "500":
@@ -123,11 +123,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              items:
-                type: integer
-              type: array
-            type: array
+            type: int
         "400":
           description: Bad Request
         "404":

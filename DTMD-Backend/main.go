@@ -65,9 +65,9 @@ func main() {
 // @Description  create a new lobby with the given name
 // @Tags         lobbies
 // @Accept       json
-// @Produce      json
+// @Produce      plain
 // @Param        lobby body createLobbyRequest true "Create Lobby"
-// @Success      200  {object} int
+// @Success      200 {string} string
 // @Failure      400
 // @Failure      500
 // @Router /lobbies [post]
@@ -88,7 +88,7 @@ func createLobby(c *gin.Context) {
 	lobbys[id] = newLobby
 
 	// Return the ID of the new lobby
-	c.JSON(http.StatusOK, gin.H{"id": newLobby.ID})
+	c.String(http.StatusOK, newLobby.ID)
 }
 
 // JoinLobby godoc
@@ -162,7 +162,7 @@ func getLobbyMembers(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        id2   path      string  true  "Member ID"
-// @Success      200  int
+// @Success      200  {int} int
 // @Failure      400
 // @Failure      404
 // @Router /lobbies/{id}/members/{id2}/updates [get]

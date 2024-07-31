@@ -9,9 +9,12 @@
  * ---------------------------------------------------------------
  */
 
-export interface MainMember {
-	id?: string;
-	name?: string;
+export interface MainCreateLobbyRequest {
+	name: string;
+}
+
+export interface MainJoinLobbyRequest {
+	nickname: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -241,18 +244,71 @@ export class HttpClient<SecurityDataType = unknown> {
  * @contact
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
-	members = {
+	lobbies = {
 		/**
-		 * @description get a list of members
+		 * @description create a new lobby with the given name
 		 *
-		 * @tags members
-		 * @name MembersList
-		 * @summary List of members
-		 * @request GET:/members
+		 * @tags lobbies
+		 * @name LobbiesCreate
+		 * @summary Create a new lobby
+		 * @request POST:/lobbies
 		 */
-		membersList: (params: RequestParams = {}) =>
-			this.request<MainMember[], void>({
-				path: `/members`,
+		lobbiesCreate: (lobby: MainCreateLobbyRequest, params: RequestParams = {}) =>
+			this.request<number, void>({
+				path: `/lobbies`,
+				method: 'POST',
+				body: lobby,
+				type: ContentType.Json,
+				format: 'json',
+				...params
+			}),
+
+		/**
+		 * @description get members of a specific lobby by ID
+		 *
+		 * @tags lobbies
+		 * @name MembersDetail
+		 * @summary Get members of a lobby
+		 * @request GET:/lobbies/{id}/members
+		 */
+		membersDetail: (id: string, params: RequestParams = {}) =>
+			this.request<string[][], void>({
+				path: `/lobbies/${id}/members`,
+				method: 'GET',
+				type: ContentType.Json,
+				format: 'json',
+				...params
+			}),
+
+		/**
+		 * @description lets a user join a lobby
+		 *
+		 * @tags lobbies
+		 * @name MembersCreate
+		 * @summary Join an existing Lobby
+		 * @request POST:/lobbies/{id}/members
+		 */
+		membersCreate: (id: string, lobby: MainJoinLobbyRequest, params: RequestParams = {}) =>
+			this.request<string, void>({
+				path: `/lobbies/${id}/members`,
+				method: 'POST',
+				body: lobby,
+				type: ContentType.Json,
+				format: 'json',
+				...params
+			}),
+
+		/**
+		 * @description Get update instructions of a specific member
+		 *
+		 * @tags lobbies
+		 * @name MembersUpdatesDetail
+		 * @summary get member update instructions
+		 * @request GET:/lobbies/{id}/members/{id2}/updates
+		 */
+		membersUpdatesDetail: (id: string, id2: string, params: RequestParams = {}) =>
+			this.request<number[][], void>({
+				path: `/lobbies/${id}/members/${id2}/updates`,
 				method: 'GET',
 				type: ContentType.Json,
 				format: 'json',

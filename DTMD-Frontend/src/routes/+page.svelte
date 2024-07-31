@@ -2,10 +2,14 @@
 	import '../app.postcss';
 	import { popup } from '@skeletonlabs/skeleton';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
-
+	import { Api, type MainCreateLobbyRequest } from '../dtmd_api';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+
+	const api = new Api({
+		baseUrl: "http://localhost:8080",
+	});
 
 	const popupCreateRoom: PopupSettings = {
 		// Represents the type of event that opens/closed the popup
@@ -13,7 +17,9 @@
 		// Matches the data-popup value on your popup element
 		target: 'popupCreateRoom',
 		// Defines which side of your trigger the popup will appear
-		placement: 'bottom'
+		placement: 'bottom',
+		//Defines which element closes poupup
+		closeQuery: ''
 	};
 	const popupJoinRoom: PopupSettings = {
 		// Represents the type of event that opens/closed the popup
@@ -21,11 +27,46 @@
 		// Matches the data-popup value on your popup element
 		target: 'popupJoinRoom',
 		// Defines which side of your trigger the popup will appear
-		placement: 'bottom'
+		placement: 'bottom',
+		//Defines which element closes poupup
+		closeQuery: ''
 	};
 
 	let roomname = '';
 	let username = '';
+	let errorMessage = '';
+	let disableCreateButton = false;
+	function createRoom() {
+		//Check input
+		if(roomname === ''){
+			errorMessage = "Please enter a room name.";
+			setTimeout(() => {
+                errorMessage = '';
+            }, 3000);
+			return;
+		}
+		if(username === ''){
+			errorMessage = "Please enter a nickname.";
+			setTimeout(() => {
+                errorMessage = '';
+            }, 3000);
+			return;
+		}
+		disableCreateButton=true;
+
+    }
+	async function createLobbyAPICall(lobbyName:string): Promise<string>{
+		const lobbyRequest: MainCreateLobbyRequest = {
+    		name: lobbyName
+		};
+		const res = await api.lobbies.lobbiesCreate(lobbyRequest);
+		if (res.ok) {
+			const jsonResponse: ApiResponse = await res.json();
+			
+		} else {
+			throw new Error("Failed to fetch member list");
+		}
+	}
 </script>
 
 <h1>Dont Touch My Dice!</h1>
@@ -49,7 +90,10 @@
 	<div class="flex flex-col">
 		<input type="text" bind:value={roomname} placeholder="Room Name" />
 		<input type="text" bind:value={username} placeholder="Nickname" />
-		<button class="btn variant-filled" style="margin-top: 2vh;">Create</button>
+		{#if errorMessage}
+		<p class="text-red-500 mt-2">{errorMessage}</p>
+		{/if}
+		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={createRoom} >Create</button>
 	</div>
 </div>
 
