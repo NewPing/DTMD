@@ -99,7 +99,7 @@ func createLobby(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        lobby body joinLobbyRequest true "Join Lobby"
-// @Success      200  {object} string
+// @Success      200  {string} string
 // @Failure      400
 // @Failure      500
 // @Router /lobbies/{id}/members [post]
@@ -141,16 +141,15 @@ func joinLobby(c *gin.Context) {
 func getLobbyMembers(c *gin.Context) {
 	id := c.Param("id")
 
+	var membersNames []string
 	if lobby, exists := lobbys[id]; exists {
-		var membersNames []string
-
 		for _, m := range lobby.Members {
 			membersNames = append(membersNames, m.Name)
 		}
 
 		c.JSON(http.StatusOK, gin.H{"id": membersNames})
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{"id": ""})
+		c.JSON(http.StatusNotFound, gin.H{"id": membersNames})
 	}
 }
 
@@ -184,7 +183,7 @@ func getUpdateInstructions(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"id": ""})
+	c.JSON(http.StatusNotFound, gin.H{"id": []int{}})
 }
 
 func generateUniqueLobbyID() string {
