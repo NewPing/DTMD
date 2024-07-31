@@ -12,11 +12,7 @@
 	const api = new Api({
 		baseUrl: "http://localhost:8080",
 	});
-	const popupClipboard: PopupSettings = {
-		event: 'click',
-		target: 'popupClipboard',
-		placement: 'bottom'
-	};
+
 	const popupCreateRoom: PopupSettings = {
 		// Represents the type of event that opens/closed the popup
 		event: 'click',
@@ -133,8 +129,8 @@
 	}
 </script>
 
-<h1>Dont Touch My Dice!</h1>
-<div class="centeredFrontPageContent">
+<h1 class="text-center text-7xl mt-3">Dont Touch My Dice!</h1>
+<div class="flex flex-col items-center justify-center text-center">
 	<button
 		class="btn variant-filled"
 		style="margin-top: 20vh; font-size: 20px;"
@@ -147,13 +143,13 @@
 
 </div>
 
-<div class="footer" >Welcome to DTMD, the ultimate online platform for virtual dice games!<br>Create a room, invite a few of your friends and get rolling!</div>
+<div class="fixed bottom-5 w-full text-center">Welcome to DTMD, the ultimate online platform for virtual dice games!<br>Create a room, invite a few of your friends and get rolling!</div>
 
 
 <div class="card p-4 w-72 shadow-xl" data-popup="popupCreateRoom">
 	<div class="flex flex-col">
-		<input type="text" bind:value={roomname} placeholder="Room Name" />
-		<input type="text" bind:value={usernameCreate} placeholder="Nickname" />
+		<input class="p-2.5 text-base m-2 rounded-full border-transparent text-black" type="text" bind:value={roomname} placeholder="Room Name" />
+		<input class="p-2.5 text-base m-2 rounded-full border-transparent text-black" type="text" bind:value={usernameCreate} placeholder="Nickname" />
 		{#if errorMessageCreate}
 		<p class="text-red-500 mt-2">{errorMessageCreate}</p>
 		{/if}
@@ -163,50 +159,11 @@
 
 <div class="card p-4 w-72 shadow-xl" data-popup="popupJoinRoom">
 	<div class="flex flex-col">
-		<input type="text" bind:value={roomPin} placeholder="Room-Pin" />
-		<input type="text" bind:value={usernameJoin} placeholder="Nickname" />
+		<input class="p-2.5 text-base m-2 rounded-full border-transparent text-black" type="text" bind:value={roomPin} placeholder="Room-Pin" />
+		<input class="p-2.5 text-base m-2 rounded-full border-transparent text-black" type="text" bind:value={usernameJoin} placeholder="Nickname" />
 		{#if errorMessageJoin}
 		<p class="text-red-500 mt-2">{errorMessageJoin}</p>
 		{/if}
 		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={joinRoom} disabled = {disableJoinButton} >Join</button>
 	</div>
 </div>
-
-<div class="card p-4 variant-filled-primary" data-popup="popupClipboard">
-	<p>Copied to clipboard</p>
-	<div class="arrow variant-filled-primary" />
-</div>
-
-<style lang="postcss">
-	h1 {
-		margin-top: 3vh;
-		text-align: center;
-		font-size: 60px;
-		line-height: 60px;
-	}
-
-	input {
-		padding: 10px;
-		font-size: 16px;
-		margin: 10px;
-		border-radius: 25px;
-		border-color: transparent;
-		color: black;
-	}
-
-	.centeredFrontPageContent {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		text-align: center;
-	}
-
-	.footer {
-		position: fixed;
-		bottom: 0;
-		margin-bottom: 3vh;
-		width: 100%;
-		text-align: center;
-	}
-</style>

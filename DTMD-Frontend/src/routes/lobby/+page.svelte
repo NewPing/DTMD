@@ -23,7 +23,6 @@
 	//constants
 	let updateMemberList:number = 0;
 	//style
-	let pinCopied = false;
 	let lobbyName = '';
 	//lobbyState
 	let members : string[] = [];
@@ -80,16 +79,7 @@
 	}
 	function copyPinToClipboard(pin:string) {
 		navigator.clipboard.writeText(pin)
-		.then(() => {
-			console.log('Room pin copied to clipboard.');
-			pinCopied = true;
-			// Reset the copied state after 3 seconds
-			setTimeout(() => pinCopied = false, 3000);
-		})
-		.catch(err => {
-			console.error('Failed to copy text: ', err);
-		});
- 	 }
+ 	}
 	async function fetchUpdates(): Promise<number[]> {
 		const res = await api.lobbies.membersUpdatesDetail(lobbyID,memberID);
 		if (res.ok) {
@@ -123,8 +113,7 @@
 					});
 				}
 			});
-		}, 500); // Increment counter every 1000 milliseconds (1 second)
-			// Clean up the interval when the component unmounts
+		}, 500); 
 			return () => clearInterval(interval);
 	}
 
