@@ -65,7 +65,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "lobbies"
+                    "member"
                 ],
                 "summary": "Get members of a lobby",
                 "parameters": [
@@ -144,6 +144,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/lobbies/{id}/members/{id2}/messages": {
+            "get": {
+                "description": "get all new chat messages for this specific member",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "member"
+                ],
+                "summary": "gget new messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lobby ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Member ID",
+                        "name": "id2",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/main.ChatMessage"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
         "/lobbies/{id}/members/{id2}/updates": {
             "get": {
                 "description": "Get update instructions of a specific member",
@@ -154,7 +205,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "lobbies"
+                    "member"
                 ],
                 "summary": "get member update instructions",
                 "parameters": [
@@ -194,9 +245,105 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/lobbies/{id}/name": {
+            "get": {
+                "description": "return the name of the specified lobby",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lobbies"
+                ],
+                "summary": "get lobby name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lobby ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/lobbies/{id}/rolldice": {
+            "post": {
+                "description": "lets a user join a lobby",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lobbies"
+                ],
+                "summary": "Join an existing Lobby",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lobby ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Roll Dice Request",
+                        "name": "lobby",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.rollDiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "int"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "main.ChatMessage": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "main.createLobbyRequest": {
             "type": "object",
             "required": [
@@ -216,6 +363,29 @@ const docTemplate = `{
             "properties": {
                 "nickname": {
                     "type": "string"
+                }
+            }
+        },
+        "main.rollDiceRequest": {
+            "type": "object",
+            "required": [
+                "diceType",
+                "isPrivateRoll",
+                "memberID",
+                "numberOfRolls"
+            ],
+            "properties": {
+                "diceType": {
+                    "type": "integer"
+                },
+                "isPrivateRoll": {
+                    "type": "boolean"
+                },
+                "memberID": {
+                    "type": "string"
+                },
+                "numberOfRolls": {
+                    "type": "integer"
                 }
             }
         }

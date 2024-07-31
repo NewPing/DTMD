@@ -3,6 +3,7 @@ package main
 import (
 	_ "DTMD_API/docs" // replace with your actual project path
 	"net/http"
+	"strconv"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -18,15 +19,21 @@ var lobbys map[string]lobby
 
 // album represents data about a record album.
 type member struct {
-	ID                 string `json:"id"`
-	Name               string `json:"name"`
-	UpdateInstructions []int  `json:"int"`
+	ID                 string        `json:"id"`
+	Name               string        `json:"name"`
+	UpdateInstructions []int         `json:"updateInstructions"`
+	NewChatMessages    []ChatMessage `json:"newChatMessages"`
+}
+
+type ChatMessage struct {
+	Sender  string `json:"id"`
+	Message string `json:"name"`
 }
 
 type lobby struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
-	Members []member `json:"list"`
+	Members []member `json:"members"`
 }
 
 // createLobbyRequest represents the request body for creating a new lobby.
@@ -37,6 +44,14 @@ type createLobbyRequest struct {
 // createLobbyRequest represents the request body for creating a new lobby.
 type joinLobbyRequest struct {
 	Nickname string `json:"nickname" binding:"required"`
+}
+
+// createLobbyRequest represents the request body for creating a new lobby.
+type rollDiceRequest struct {
+	MemberID      string `json:"memberID" binding:"required"`
+	IsPrivateRoll bool   `json:"isPrivateRoll" binding:"required"`
+	NumberOfRolls int    `json:"numberOfRolls" binding:"required"`
+	DiceType      int    `json:"diceType" binding:"required"`
 }
 
 const (
@@ -54,8 +69,11 @@ func main() {
 
 	router.POST("/lobbies", createLobby)
 	router.POST("/lobbies/:id/members", joinLobby)
+	router.POST("/lobbies/:id/rolldice", rollDice)
+	router.GET("/lobbies/:id/name", getLobbyName)
 	router.GET("/lobbies/:id/members", getLobbyMembers)
 	router.GET("/lobbies/:id/members/:id2/updates", getUpdateInstructions)
+	router.GET("/lobbies/:id/members/:id2/messages", getNewChatMessages)
 
 	router.Run("localhost:8080")
 }
@@ -128,10 +146,73 @@ func joinLobby(c *gin.Context) {
 	}
 }
 
+// JoinLobby godoc
+// @Summary      Join an existing Lobby
+// @Description  lets a user join a lobby
+// @Tags         lobbies
+// @Accept       json
+// @Produce      json
+// @Param        id    path     string  true  "Lobby ID"
+// @Param        lobby body     rollDiceRequest true "Roll Dice Request"
+// @Success      200   {int}    int
+// @Failure      400
+// @Failure      500
+// @Router /lobbies/{id}/rolldice [post]
+func rollDice(c *gin.Context) {
+	id := c.Param("id")
+	var req rollDiceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var msg = "Has rolled " + strconv.Itoa(req.NumberOfRolls) + " w" + strconv.Itoa(req.DiceType)
+	var result = 0
+	for i := 0; i < 10; i++ {
+		var number = GenerateSecureRandomNumber(1, req.DiceType)
+		result += number
+	}
+
+	msg += ", result: " + strconv.Itoa(result)
+
+	if lobby, exists := lobbys[id]; exists {
+		for i := range lobby.Members {
+			lobby.Members[i].NewChatMessages = append(lobby.Members[i].NewChatMessages, ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
+			notifyLobbyMembers(id, InstructionUpdateChat)
+			lobbys[id] = lobby
+			return
+		}
+		c.JSON(http.StatusOK, result)
+	} else {
+		c.JSON(http.StatusOK, -1)
+	}
+}
+
+// GetLobbyName godoc
+// @Summary      get lobby name
+// @Description  return the name of the specified lobby
+// @Tags         lobbies
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Lobby ID"
+// @Success      200  {string} string
+// @Failure      400
+// @Failure      500
+// @Router /lobbies/{id}/name [get]
+func getLobbyName(c *gin.Context) {
+	id := c.Param("id")
+
+	if lobby, exists := lobbys[id]; exists {
+		c.JSON(http.StatusOK, lobby.Name)
+	} else {
+		c.JSON(http.StatusNotFound, "")
+	}
+}
+
 // GetLobbyMembers godoc
 // @Summary      Get members of a lobby
 // @Description  get members of a specific lobby by ID
-// @Tags         lobbies
+// @Tags         member
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
@@ -154,10 +235,40 @@ func getLobbyMembers(c *gin.Context) {
 	}
 }
 
+// GetNewChatMessages godoc
+// @Summary      gget new messages
+// @Description  get all new chat messages for this specific member
+// @Tags         member
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Lobby ID"
+// @Param        id2  path      string  true  "Member ID"
+// @Success      200  {array}   []ChatMessage
+// @Failure      400
+// @Failure      404
+// @Router /lobbies/{id}/members/{id2}/messages [get]
+func getNewChatMessages(c *gin.Context) {
+	lobbyID := c.Param("id")
+	memberID := c.Param("id2")
+
+	if lobby, exists := lobbys[lobbyID]; exists {
+		for i := range lobby.Members {
+			if lobby.Members[i].ID == memberID {
+				c.JSON(http.StatusOK, lobby.Members[i].NewChatMessages)
+				lobby.Members[i].NewChatMessages = []ChatMessage{}
+				lobbys[lobbyID] = lobby
+				return
+			}
+		}
+	}
+
+	c.JSON(http.StatusNotFound, []ChatMessage{})
+}
+
 // GetMemberUpdateInstructions godoc
 // @Summary      get member update instructions
 // @Description  Get update instructions of a specific member
-// @Tags         lobbies
+// @Tags         member
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
@@ -169,9 +280,6 @@ func getLobbyMembers(c *gin.Context) {
 func getUpdateInstructions(c *gin.Context) {
 	lobbyID := c.Param("id")
 	memberID := c.Param("id2")
-
-	var lobbys2 = lobbys
-	print(lobbys2)
 
 	if lobby, exists := lobbys[lobbyID]; exists {
 		for i := range lobby.Members {
@@ -185,6 +293,35 @@ func getUpdateInstructions(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNotFound, []int{})
+}
+
+func GetUserNameByID(lobbyID, userID string) string {
+	if lobby, exists := lobbys[lobbyID]; exists {
+		for i := range lobby.Members {
+			if lobby.Members[i].ID == userID {
+				return lobby.Members[i].Name
+			}
+		}
+	}
+	return "undefined"
+}
+
+func GenerateSecureRandomNumber(xmin, xmax int) int {
+	if xmax <= xmin {
+		return -1
+	}
+
+	// Calculate the range
+	rangeSize := xmax - xmin + 1
+
+	// Generate a secure random number in the range [0, rangeSize)
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(rangeSize)))
+	if err != nil {
+		return -1
+	}
+
+	// Shift the number to the desired range [xmin, xmax]
+	return int(n.Int64() + int64(xmin))
 }
 
 func generateUniqueLobbyID() string {
