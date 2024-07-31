@@ -12,7 +12,11 @@
 	const api = new Api({
 		baseUrl: "http://localhost:8080",
 	});
-
+	const popupClipboard: PopupSettings = {
+		event: 'click',
+		target: 'popupClipboard',
+		placement: 'bottom'
+	};
 	const popupCreateRoom: PopupSettings = {
 		// Represents the type of event that opens/closed the popup
 		event: 'click',
@@ -33,36 +37,76 @@
 		//Defines which element closes poupup
 		closeQuery: ''
 	};
-	let userID = '';
+
 	let roomname = '';
-	let username = '';
-	let errorMessage = '';
+	let usernameCreate = '';
+	let roomPin = '';
+	let usernameJoin = '';
+	let errorMessageCreate = '';
+	let errorMessageJoin = '';
 	let disableCreateButton = false;
+	let disableJoinButton = false;
+
 	async function createRoom() {
 		//Check input
 		if(roomname === ''){
-			errorMessage = "Please enter a room name.";
+			errorMessageCreate = "Please enter a room name.";
 			setTimeout(() => {
-                errorMessage = '';
+                errorMessageCreate = '';
             }, 3000);
 			return;
 		}
-		if(username === ''){
-			errorMessage = "Please enter a nickname.";
+		if(usernameCreate === ''){
+			errorMessageCreate = "Please enter a nickname.";
 			setTimeout(() => {
-                errorMessage = '';
+                errorMessageCreate = '';
             }, 3000);
 			return;
 		}
 		disableCreateButton=true;
 		var pin = await createLobbyAPICall(roomname);
-		var userID = await joinLobbyAPICall(pin,username);
+		var userID = await joinLobbyAPICall(pin,usernameCreate);
 		MemberID.set(userID);
 		LobbyID.set(pin);
 		console.log("successfull creation",userID);
-		disableCreateButton=false;
-		goto('/lobby');
+		goto('/lobby').then(() => {
+			disableCreateButton=false;
+		});
     }
+	async function joinRoom(){
+		//Check input
+		if(roomPin === ''){
+			errorMessageJoin = "Please enter a room-pin.";
+			setTimeout(() => {
+				errorMessageJoin = '';
+			}, 3000);
+			return;
+		}
+		const validPin = /^[A-Z0-9]{6}$/;
+		if(!validPin.test(roomPin)){
+			errorMessageJoin = "Please enter a valid room pin.";
+			setTimeout(() => {
+				errorMessageJoin = '';
+			}, 3000);
+			return;
+		}
+		if(usernameJoin === ''){
+			errorMessageJoin = "Please enter a nickname.";
+			setTimeout(() => {
+                errorMessageJoin = '';
+            }, 3000);
+			return;
+		}
+		disableJoinButton=true;
+		var userID = await joinLobbyAPICall(roomPin,usernameJoin);
+		MemberID.set(userID);
+		LobbyID.set(roomPin);
+		console.log("successful lobby join",userID);
+		goto('/lobby').then(() => {
+			disableJoinButton=false;
+		});
+	}
+
 	async function createLobbyAPICall(lobbyName:string): Promise<string>{
 		const lobbyCreateRequest: MainCreateLobbyRequest = {
     		name: lobbyName
@@ -109,9 +153,9 @@
 <div class="card p-4 w-72 shadow-xl" data-popup="popupCreateRoom">
 	<div class="flex flex-col">
 		<input type="text" bind:value={roomname} placeholder="Room Name" />
-		<input type="text" bind:value={username} placeholder="Nickname" />
-		{#if errorMessage}
-		<p class="text-red-500 mt-2">{errorMessage}</p>
+		<input type="text" bind:value={usernameCreate} placeholder="Nickname" />
+		{#if errorMessageCreate}
+		<p class="text-red-500 mt-2">{errorMessageCreate}</p>
 		{/if}
 		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={createRoom} disabled = {disableCreateButton} >Create</button>
 	</div>
@@ -119,10 +163,18 @@
 
 <div class="card p-4 w-72 shadow-xl" data-popup="popupJoinRoom">
 	<div class="flex flex-col">
-		<input type="text" bind:value={roomname} placeholder="Room-Pin" />
-		<input type="text" bind:value={username} placeholder="Nickname" />
-		<button class="btn variant-filled" style="margin-top: 2vh;">Join</button>
+		<input type="text" bind:value={roomPin} placeholder="Room-Pin" />
+		<input type="text" bind:value={usernameJoin} placeholder="Nickname" />
+		{#if errorMessageJoin}
+		<p class="text-red-500 mt-2">{errorMessageJoin}</p>
+		{/if}
+		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={joinRoom} disabled = {disableJoinButton} >Join</button>
 	</div>
+</div>
+
+<div class="card p-4 variant-filled-primary" data-popup="popupClipboard">
+	<p>Copied to clipboard</p>
+	<div class="arrow variant-filled-primary" />
 </div>
 
 <style lang="postcss">

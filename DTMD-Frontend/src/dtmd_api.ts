@@ -9,12 +9,24 @@
  * ---------------------------------------------------------------
  */
 
+export interface MainChatMessage {
+	id?: string;
+	name?: string;
+}
+
 export interface MainCreateLobbyRequest {
 	name: string;
 }
 
 export interface MainJoinLobbyRequest {
 	nickname: string;
+}
+
+export interface MainRollDiceRequest {
+	diceType: number;
+	isPrivateRoll: boolean;
+	memberID: string;
+	numberOfRolls: number;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -265,7 +277,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		/**
 		 * @description get members of a specific lobby by ID
 		 *
-		 * @tags lobbies
+		 * @tags member
 		 * @name MembersDetail
 		 * @summary Get members of a lobby
 		 * @request GET:/lobbies/{id}/members
@@ -298,9 +310,26 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 			}),
 
 		/**
+		 * @description get all new chat messages for this specific member
+		 *
+		 * @tags member
+		 * @name MembersMessagesDetail
+		 * @summary gget new messages
+		 * @request GET:/lobbies/{id}/members/{id2}/messages
+		 */
+		membersMessagesDetail: (id: string, id2: string, params: RequestParams = {}) =>
+			this.request<MainChatMessage[][], void>({
+				path: `/lobbies/${id}/members/${id2}/messages`,
+				method: 'GET',
+				type: ContentType.Json,
+				format: 'json',
+				...params
+			}),
+
+		/**
 		 * @description Get update instructions of a specific member
 		 *
-		 * @tags lobbies
+		 * @tags member
 		 * @name MembersUpdatesDetail
 		 * @summary get member update instructions
 		 * @request GET:/lobbies/{id}/members/{id2}/updates
@@ -309,6 +338,41 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 			this.request<number[][], void>({
 				path: `/lobbies/${id}/members/${id2}/updates`,
 				method: 'GET',
+				type: ContentType.Json,
+				format: 'json',
+				...params
+			}),
+
+		/**
+		 * @description return the name of the specified lobby
+		 *
+		 * @tags lobbies
+		 * @name NameDetail
+		 * @summary get lobby name
+		 * @request GET:/lobbies/{id}/name
+		 */
+		nameDetail: (id: string, params: RequestParams = {}) =>
+			this.request<string, void>({
+				path: `/lobbies/${id}/name`,
+				method: 'GET',
+				type: ContentType.Json,
+				format: 'json',
+				...params
+			}),
+
+		/**
+		 * @description lets a user join a lobby
+		 *
+		 * @tags lobbies
+		 * @name RolldiceCreate
+		 * @summary Join an existing Lobby
+		 * @request POST:/lobbies/{id}/rolldice
+		 */
+		rolldiceCreate: (id: string, lobby: MainRollDiceRequest, params: RequestParams = {}) =>
+			this.request<int, void>({
+				path: `/lobbies/${id}/rolldice`,
+				method: 'POST',
+				body: lobby,
 				type: ContentType.Json,
 				format: 'json',
 				...params

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { LobbyID, MemberID } from './../../stores.js';
 	import '../../app.postcss';
-	import { SlideToggle, RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
+	import { SlideToggle, RadioGroup, RadioItem, type PopupSettings, popup } from '@skeletonlabs/skeleton';
 
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
@@ -14,6 +14,19 @@
 		baseUrl: "http://localhost:8080",
 	});
 
+	const popupClipboard: PopupSettings = {
+		event: 'click',
+		target: 'popupClipboard',
+		placement: 'bottom',
+	
+	};
+	//constants
+	let updateMemberList:number = 0;
+	//style
+	let pinCopied = false;
+	let lobbyName = '';
+	//lobbyState
+	let members : string[] = [];
 	let isPrivateMessage: boolean = false;
 	let numberOfDice: number = 1;
 	let diceType: number = 1;
@@ -22,29 +35,99 @@
 	let memberID = '';
 
 	onMount(() => {
-		const unsubscribeLobbyID = LobbyID.subscribe(value => {
+		//Load stored variables
+		const unsubscribeLobbyID = LobbyID.subscribe(value => {https://discord.com/channels/@me/950465749590360064
 			lobbyID = value;
 		});
 
 		const unsubscribeMemberID = MemberID.subscribe(value => {
 			memberID = value;
 		});
-
 		unsubscribeLobbyID();
 		unsubscribeMemberID();
-
 		console.log("successfull join", lobbyID);
+		//fetch lobby information
+		fetchMembers().then( fetchedMembers => {
+			members = fetchedMembers;
+		});
+		loadLobbyName().then( fetchedLobbyName => {
+			lobbyName = fetchedLobbyName;
+		});
+		fetchUpdateRoutine();
 	});
 
-	/*async function loadMembers(): Promise<MainMember[]> {
-		const res = await api.members.membersList();
+	async function fetchMembers(): Promise<string[]> {
+		const res = await api.lobbies.membersDetail(lobbyID);
 		if (res.ok) {
-			return res.data;
-			
+			const response = await res.json();
+			if (Array.isArray(response)) {
+				return response; 
+			} else {
+				throw new Error('Error fetching members, not array of strings.');
+			}
 		} else {
 			throw new Error("Failed to fetch member list");
 		}
-	}*/
+	}
+	async function loadLobbyName(): Promise<string> {
+		const res = await api.lobbies.nameDetail(lobbyID);
+		if (res.ok) {
+			const lobbyName = await res.text()
+			return lobbyName;
+		} else {
+			throw new Error("Failed to fetch lobby name");
+		}
+	}
+	function copyPinToClipboard(pin:string) {
+		navigator.clipboard.writeText(pin)
+		.then(() => {
+			console.log('Room pin copied to clipboard.');
+			pinCopied = true;
+			// Reset the copied state after 3 seconds
+			setTimeout(() => pinCopied = false, 3000);
+		})
+		.catch(err => {
+			console.error('Failed to copy text: ', err);
+		});
+ 	 }
+	async function fetchUpdates(): Promise<number[]> {
+		const res = await api.lobbies.membersUpdatesDetail(lobbyID,memberID);
+		if (res.ok) {
+			const response = await res.json();
+            if (Array.isArray(response)) {
+                // Map and parse each item to ensure it's a number
+                const parsedResponse = response.map(item => {
+                    // Assuming the items are strings that should be parsed to integers
+                    const parsedItem = parseInt(item, 10);
+                    if (isNaN(parsedItem)) {
+                        throw new Error('Data contains non-numeric values');
+                    }
+                    return parsedItem;
+                });
+				return parsedResponse;
+			} else {
+				throw new Error('Error fetching members, not array of strings.');
+			}
+		} else {
+			throw new Error("Failed to fetch member list");
+		}
+	}
+
+	function fetchUpdateRoutine(){
+		//establish interval as timer function
+		const interval = setInterval(() => {
+			fetchUpdates().then( updates => {
+				if(updates.includes(updateMemberList)){
+					fetchMembers().then( fetchedMembers => {
+					members = fetchedMembers;
+					});
+				}
+			});
+		}, 500); // Increment counter every 1000 milliseconds (1 second)
+			// Clean up the interval when the component unmounts
+			return () => clearInterval(interval);
+	}
+
 </script>
 
 
@@ -52,33 +135,41 @@
 	<!-- Header -->
 	<header class="bg-surface-100-800-token p-4">
 		<div class="grid grid-cols-2 gap-4">
-			<div class="font-bold text-xl">DTMD - My Lobby 123</div>
-			<div class="text-right">Lobby PIN: 123456</div>
+		  <div class="font-bold text-xl">
+			<span class="font-bold text-xl">DTMD - </span>
+			<span class="font-bold text-xl">{lobbyName === '' ? 'loading lobby name...' : lobbyName}</span>
+		  </div>
+		  <div class="text-right">
+			<span class="">Lobby PIN:</span>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<span class="hover:underline cursor-pointer" use:popup={popupClipboard} on:click={() => copyPinToClipboard(lobbyID)}>
+				{lobbyID === '' ? 'loading Pin...' : lobbyID}
+			</span>
+		  </div>
 		</div>
-	</header>
+	  </header>
 	<!-- Grid Columns -->
 	<div class="grid grid-cols-6">
 		<div class="bg-surface-500/5 p-4 flex h-screen overflow-y-auto">
 			<nav class="list-nav" style="width: 100%;">
-				
-			<!--	{#await loadMembers()}
+				{#if members.length === 0}
 					<p>Loading members...</p>
-				{:then members}
+				{:else}
 					<ul>
-						{#each members as item, i}
+						{#each members as item, _}
 							<li>
-								<!-- svelte-ignore a11y-missing-attribute
+								<!-- svelte-ignore a11y-missing-attribute --->
 								<a class="flex-auto font-medium">
-									<span>{item.name}</span>
+									<span>{item}</span>
 								</a>
 							</li>
 						{/each}
 					</ul>
-				{:catch error}
-					<p style="color: red">Error: {error.message}</p>
-				{/await } -->
+				{/if}
 			</nav>
 		</div>
+
 
 		<!-- Main Content -->
 		<main class="space-y-4 p-4 flex h-screen overflow-auto col-span-3">
@@ -154,4 +245,9 @@
 	</div>
 	<!-- Footer -->
 	<footer class="bg-blue-500 p-4">(footer)</footer>
+</div>
+
+<div class="card p-4 variant-filled-primary" data-popup="popupClipboard">
+	<p>Copied to clipboard</p>
+	<div class="arrow variant-filled-primary" />
 </div>
