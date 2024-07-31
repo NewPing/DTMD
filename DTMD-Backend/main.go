@@ -7,8 +7,13 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
+	"crypto/rand"
+	"math/big"
+
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
+
+	"github.com/google/uuid"
 )
 
 // album represents data about a record album.
@@ -18,9 +23,10 @@ type member struct {
 }
 
 type lobby struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Members []member `json:"list"`
+	ID      uuid.UUID `json:"id"`
+	PIN     string    `json:"pin"`
+	Name    string    `json:"name"`
+	Members []member  `json:"list"`
 }
 
 // albums slice to seed record album data.
@@ -41,6 +47,20 @@ func main() {
 	router.POST("/lobbys/:lobbyName", createLobby)
 
 	router.Run("localhost:8080")
+}
+
+// generateRandomID generates a random string of a given length using the specified character set
+func generateRandomID(length int) (string, error) {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	var id string
+	for i := 0; i < length; i++ {
+		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return "", err
+		}
+		id += string(charset[randomIndex.Int64()])
+	}
+	return id, nil
 }
 
 // ListAccounts godoc
@@ -72,6 +92,7 @@ func getMembers(c *gin.Context) {
 // @Router /lobbys [post]
 func createLobby(c *gin.Context) {
 	lobbyName := c.Param("lobbyName")
+	unique_id := uuid.New()
 	var newLobby = lobby{ID: "1", Name: lobbyName, Members: []member{{ID: "1", Name: "AromaticA"}}}
 	lobbys = append(lobbys, newLobby)
 	c.JSON(http.StatusOK, newLobby.Name)
