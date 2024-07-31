@@ -44,9 +44,9 @@
                 }
             }
         },
-        "/members": {
+        "/lobbies/{id}/members": {
             "get": {
-                "description": "get a list of members",
+                "description": "get members of a specific lobby by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -54,16 +54,28 @@
                     "application/json"
                 ],
                 "tags": [
-                    "members"
+                    "lobbies"
                 ],
-                "summary": "List of members",
+                "summary": "Get members of a lobby",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lobby ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.member"
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
                             }
                         }
                     },
@@ -72,9 +84,102 @@
                     },
                     "404": {
                         "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "description": "lets a user join a lobby",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lobbies"
+                ],
+                "summary": "Join an existing Lobby",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lobby ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Join Lobby",
+                        "name": "lobby",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.joinLobbyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
                     },
                     "500": {
                         "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
+        "/lobbies/{id}/members/{id2}/updates": {
+            "get": {
+                "description": "Get update instructions of a specific member",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lobbies"
+                ],
+                "summary": "get member update instructions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lobby ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Member ID",
+                        "name": "id2",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
                     }
                 }
             }
@@ -92,13 +197,13 @@
                 }
             }
         },
-        "main.member": {
+        "main.joinLobbyRequest": {
             "type": "object",
+            "required": [
+                "nickname"
+            ],
             "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
+                "nickname": {
                     "type": "string"
                 }
             }

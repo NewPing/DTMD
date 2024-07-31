@@ -6,12 +6,12 @@ definitions:
     required:
     - name
     type: object
-  main.member:
+  main.joinLobbyRequest:
     properties:
-      id:
+      nickname:
         type: string
-      name:
-        type: string
+    required:
+    - nickname
     type: object
 info:
   contact: {}
@@ -42,11 +42,17 @@ paths:
       summary: Create a new lobby
       tags:
       - lobbies
-  /members:
+  /lobbies/{id}/members:
     get:
       consumes:
       - application/json
-      description: get a list of members
+      description: get members of a specific lobby by ID
+      parameters:
+      - description: Lobby ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -54,15 +60,79 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.member'
+              items:
+                type: string
+              type: array
             type: array
         "400":
           description: Bad Request
         "404":
           description: Not Found
+      summary: Get members of a lobby
+      tags:
+      - lobbies
+    post:
+      consumes:
+      - application/json
+      description: lets a user join a lobby
+      parameters:
+      - description: Lobby ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Join Lobby
+        in: body
+        name: lobby
+        required: true
+        schema:
+          $ref: '#/definitions/main.joinLobbyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
         "500":
           description: Internal Server Error
-      summary: List of members
+      summary: Join an existing Lobby
       tags:
-      - members
+      - lobbies
+  /lobbies/{id}/members/{id2}/updates:
+    get:
+      consumes:
+      - application/json
+      description: Get update instructions of a specific member
+      parameters:
+      - description: Lobby ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Member ID
+        in: path
+        name: id2
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                type: integer
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: get member update instructions
+      tags:
+      - lobbies
 swagger: "2.0"
