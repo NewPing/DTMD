@@ -139,6 +139,7 @@ func joinLobby(c *gin.Context) {
 
 	if lobby, exists := lobbys[id]; exists {
 		notifyLobbyMembers(id, InstructionUpdateLobbyMembers)
+		notifyLobbyMembers(id, InstructionUpdateChat)
 		lobby.Members = append(lobby.Members, newMember)
 		lobbys[id] = lobby
 
