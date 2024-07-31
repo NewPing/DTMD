@@ -3,6 +3,7 @@ package main
 import (
 	_ "DTMD_API/docs" // replace with your actual project path
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/gin-contrib/cors"
@@ -360,7 +361,11 @@ func notifyLobbyMembers(lobbyID string, updateInstructionType int) {
 	if lobby, exists := lobbys[lobbyID]; exists {
 
 		for i := range lobby.Members {
-			lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
+			containsInstructionType := slices.Contains(lobby.Members[i].UpdateInstructions, updateInstructionType)
+
+			if !containsInstructionType {
+				lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
+			}
 		}
 	}
 }
@@ -370,7 +375,11 @@ func notifyLobbyMember(lobbyID string, memberID string, updateInstructionType in
 
 		for i := range lobby.Members {
 			if lobby.Members[i].ID == memberID {
-				lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
+				containsInstructionType := slices.Contains(lobby.Members[i].UpdateInstructions, updateInstructionType)
+
+				if !containsInstructionType {
+					lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
+				}
 			}
 		}
 	}
