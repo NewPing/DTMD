@@ -5,7 +5,7 @@
 	import { Api, type MainCreateLobbyRequest, type MainJoinLobbyRequest } from '../dtmd_api';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
-	import {LobbyName,LobbyID,MemberID} from '../stores.js';
+	import { LobbyID, MemberID } from '../stores.js';
 	import { goto } from '$app/navigation';
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
@@ -59,7 +59,6 @@
 		var userID = await joinLobbyAPICall(pin,username);
 		MemberID.set(userID);
 		LobbyID.set(pin);
-		LobbyName.set(roomname);
 		console.log("successfull creation",userID);
 		disableCreateButton=false;
 		goto('/lobby');
