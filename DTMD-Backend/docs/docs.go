@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/lobbys": {
+        "/lobbies": {
             "post": {
-                "description": "creates a new lobby",
+                "description": "create a new lobby with the given name",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,16 +25,18 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "lobbys"
+                    "lobbies"
                 ],
-                "summary": "Creates a new Lobby",
+                "summary": "Create a new lobby",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "lobby name",
-                        "name": "lobbyName",
-                        "in": "header",
-                        "required": true
+                        "description": "Create Lobby",
+                        "name": "lobby",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.createLobbyRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -46,9 +48,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request"
-                    },
-                    "404": {
-                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error"
@@ -93,6 +92,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "main.createLobbyRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "main.member": {
             "type": "object",
             "properties": {
