@@ -22,19 +22,19 @@ definitions:
     type: object
   main.rollDiceRequest:
     properties:
-      diceType:
+      DiceType:
         type: integer
-      isPrivateRoll:
-        type: boolean
-      memberID:
+      IsPrivateRoll:
+        type: integer
+      MemberID:
         type: string
-      numberOfRolls:
+      NumberOfRolls:
         type: integer
     required:
-    - diceType
-    - isPrivateRoll
-    - memberID
-    - numberOfRolls
+    - DiceType
+    - IsPrivateRoll
+    - MemberID
+    - NumberOfRolls
     type: object
 info:
   contact: {}
@@ -111,7 +111,7 @@ paths:
         schema:
           $ref: '#/definitions/main.joinLobbyRequest'
       produces:
-      - application/json
+      - text/plain
       responses:
         "200":
           description: OK
@@ -204,7 +204,7 @@ paths:
         required: true
         type: string
       produces:
-      - application/json
+      - text/plain
       responses:
         "200":
           description: OK
@@ -235,7 +235,7 @@ paths:
         schema:
           $ref: '#/definitions/main.rollDiceRequest'
       produces:
-      - application/json
+      - text/plain
       responses:
         "200":
           description: OK

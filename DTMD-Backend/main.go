@@ -10,6 +10,7 @@ import (
 
 	"crypto/rand"
 	"math/big"
+	rand2 "math/rand/v2"
 
 	swaggerFiles "github.com/swaggo/files"     // swagger embed files
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
@@ -48,10 +49,10 @@ type joinLobbyRequest struct {
 
 // createLobbyRequest represents the request body for creating a new lobby.
 type rollDiceRequest struct {
-	MemberID      string `json:"memberID" binding:"required"`
-	IsPrivateRoll bool   `json:"isPrivateRoll" binding:"required"`
-	NumberOfRolls int    `json:"numberOfRolls" binding:"required"`
-	DiceType      int    `json:"diceType" binding:"required"`
+	MemberID      string `json:"MemberID" binding:"required"`
+	IsPrivateRoll *int   `json:"IsPrivateRoll" binding:"required"`
+	NumberOfRolls *int   `json:"NumberOfRolls" binding:"required"`
+	DiceType      *int   `json:"DiceType" binding:"required"`
 }
 
 const (
@@ -114,7 +115,7 @@ func createLobby(c *gin.Context) {
 // @Description  lets a user join a lobby
 // @Tags         lobbies
 // @Accept       json
-// @Produce      json
+// @Produce      plain
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        lobby body joinLobbyRequest true "Join Lobby"
 // @Success      200  {string} string
@@ -140,18 +141,18 @@ func joinLobby(c *gin.Context) {
 		lobby.Members = append(lobby.Members, newMember)
 		lobbys[id] = lobby
 
-		c.JSON(http.StatusOK, newMember.ID)
+		c.String(http.StatusOK, newMember.ID)
 	} else {
-		c.JSON(http.StatusNotFound, newMember.ID)
+		c.String(http.StatusBadRequest, newMember.ID)
 	}
 }
 
-// JoinLobby godoc
+// RollDice godoc
 // @Summary      Join an existing Lobby
 // @Description  lets a user join a lobby
 // @Tags         lobbies
 // @Accept       json
-// @Produce      json
+// @Produce      plain
 // @Param        id    path     string  true  "Lobby ID"
 // @Param        lobby body     rollDiceRequest true "Roll Dice Request"
 // @Success      200   {int}    int
@@ -166,10 +167,10 @@ func rollDice(c *gin.Context) {
 		return
 	}
 
-	var msg = "Has rolled " + strconv.Itoa(req.NumberOfRolls) + " w" + strconv.Itoa(req.DiceType)
+	var msg = "Has rolled " + strconv.Itoa(*req.NumberOfRolls) + " w" + strconv.Itoa(*req.DiceType)
 	var result = 0
-	for i := 0; i < 10; i++ {
-		var number = GenerateSecureRandomNumber(1, req.DiceType)
+	for i := 0; i < *req.NumberOfRolls; i++ {
+		var number = GenerateRandomNumber(1, *req.DiceType)
 		result += number
 	}
 
@@ -177,14 +178,20 @@ func rollDice(c *gin.Context) {
 
 	if lobby, exists := lobbys[id]; exists {
 		for i := range lobby.Members {
-			lobby.Members[i].NewChatMessages = append(lobby.Members[i].NewChatMessages, ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
-			notifyLobbyMembers(id, InstructionUpdateChat)
-			lobbys[id] = lobby
-			return
+			if *req.IsPrivateRoll == 0 || lobby.Members[i].ID == req.MemberID {
+				lobby.Members[i].NewChatMessages = append(lobby.Members[i].NewChatMessages, ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
+				if *req.IsPrivateRoll == 0 {
+					notifyLobbyMembers(id, InstructionUpdateChat)
+				} else {
+					notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
+				}
+
+				lobbys[id] = lobby
+				c.JSON(http.StatusOK, result)
+			}
 		}
-		c.JSON(http.StatusOK, result)
 	} else {
-		c.JSON(http.StatusOK, -1)
+		c.String(http.StatusBadRequest, strconv.Itoa(-1))
 	}
 }
 
@@ -193,7 +200,7 @@ func rollDice(c *gin.Context) {
 // @Description  return the name of the specified lobby
 // @Tags         lobbies
 // @Accept       json
-// @Produce      json
+// @Produce      plain
 // @Param        id   path      string  true  "Lobby ID"
 // @Success      200  {string} string
 // @Failure      400
@@ -203,9 +210,9 @@ func getLobbyName(c *gin.Context) {
 	id := c.Param("id")
 
 	if lobby, exists := lobbys[id]; exists {
-		c.JSON(http.StatusOK, lobby.Name)
+		c.String(http.StatusOK, lobby.Name)
 	} else {
-		c.JSON(http.StatusNotFound, "")
+		c.String(http.StatusBadRequest, "")
 	}
 }
 
@@ -231,7 +238,7 @@ func getLobbyMembers(c *gin.Context) {
 
 		c.JSON(http.StatusOK, membersNames)
 	} else {
-		c.JSON(http.StatusNotFound, membersNames)
+		c.JSON(http.StatusBadRequest, membersNames)
 	}
 }
 
@@ -262,7 +269,7 @@ func getNewChatMessages(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusNotFound, []ChatMessage{})
+	c.JSON(http.StatusBadRequest, []ChatMessage{})
 }
 
 // GetMemberUpdateInstructions godoc
@@ -292,7 +299,7 @@ func getUpdateInstructions(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusNotFound, []int{})
+	c.JSON(http.StatusBadRequest, []int{})
 }
 
 func GetUserNameByID(lobbyID, userID string) string {
@@ -306,22 +313,8 @@ func GetUserNameByID(lobbyID, userID string) string {
 	return "undefined"
 }
 
-func GenerateSecureRandomNumber(xmin, xmax int) int {
-	if xmax <= xmin {
-		return -1
-	}
-
-	// Calculate the range
-	rangeSize := xmax - xmin + 1
-
-	// Generate a secure random number in the range [0, rangeSize)
-	n, err := rand.Int(rand.Reader, big.NewInt(int64(rangeSize)))
-	if err != nil {
-		return -1
-	}
-
-	// Shift the number to the desired range [xmin, xmax]
-	return int(n.Int64() + int64(xmin))
+func GenerateRandomNumber(xmin, xmax int) int {
+	return rand2.IntN(xmax-xmin) + xmin
 }
 
 func generateUniqueLobbyID() string {
@@ -367,6 +360,17 @@ func notifyLobbyMembers(lobbyID string, updateInstructionType int) {
 
 		for i := range lobby.Members {
 			lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
+		}
+	}
+}
+
+func notifyLobbyMember(lobbyID string, memberID string, updateInstructionType int) {
+	if lobby, exists := lobbys[lobbyID]; exists {
+
+		for i := range lobby.Members {
+			if lobby.Members[i].ID == memberID {
+				lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
+			}
 		}
 	}
 }

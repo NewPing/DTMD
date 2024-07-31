@@ -104,7 +104,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "text/plain"
                 ],
                 "tags": [
                     "lobbies"
@@ -253,7 +253,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "text/plain"
                 ],
                 "tags": [
                     "lobbies"
@@ -291,7 +291,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "produces": [
-                    "application/json"
+                    "text/plain"
                 ],
                 "tags": [
                     "lobbies"
@@ -369,22 +369,22 @@ const docTemplate = `{
         "main.rollDiceRequest": {
             "type": "object",
             "required": [
-                "diceType",
-                "isPrivateRoll",
-                "memberID",
-                "numberOfRolls"
+                "DiceType",
+                "IsPrivateRoll",
+                "MemberID",
+                "NumberOfRolls"
             ],
             "properties": {
-                "diceType": {
+                "DiceType": {
                     "type": "integer"
                 },
-                "isPrivateRoll": {
-                    "type": "boolean"
+                "IsPrivateRoll": {
+                    "type": "integer"
                 },
-                "memberID": {
+                "MemberID": {
                     "type": "string"
                 },
-                "numberOfRolls": {
+                "NumberOfRolls": {
                     "type": "integer"
                 }
             }
