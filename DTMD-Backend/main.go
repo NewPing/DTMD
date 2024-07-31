@@ -162,7 +162,7 @@ func getLobbyMembers(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        id2   path      string  true  "Member ID"
-// @Success      200  {int} int
+// @Success      200  {array}   []int
 // @Failure      400
 // @Failure      404
 // @Router /lobbies/{id}/members/{id2}/updates [get]
@@ -174,11 +174,10 @@ func getUpdateInstructions(c *gin.Context) {
 	print(lobbys2)
 
 	if lobby, exists := lobbys[lobbyID]; exists {
-
-		for _, m := range lobby.Members {
-			if m.ID == memberID {
-				c.JSON(http.StatusOK, gin.H{"id": m.UpdateInstructions})
-				//m.UpdateInstructions = []int{}
+		for i := range lobby.Members {
+			if lobby.Members[i].ID == memberID {
+				c.JSON(http.StatusOK, gin.H{"id": lobby.Members[i].UpdateInstructions})
+				lobby.Members[i].UpdateInstructions = []int{}
 				lobbys[lobbyID] = lobby
 				return
 			}
@@ -228,17 +227,9 @@ func generateRandomPin(length int) string {
 
 func notifyLobbyMembers(lobbyID string, updateInstructionType int) {
 	if lobby, exists := lobbys[lobbyID]; exists {
-		for _, member := range lobby.Members {
-			member.UpdateInstructions = append(member.UpdateInstructions, updateInstructionType)
 
-		}
-		lobbys[lobbyID] = lobby
-
-		for _, member := range lobbys[lobbyID].Members {
-			println(member.Name)
-			for _, update := range member.UpdateInstructions {
-				println(update)
-			}
+		for i := range lobby.Members {
+			lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
 		}
 	}
 }
