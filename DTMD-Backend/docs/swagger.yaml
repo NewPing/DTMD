@@ -83,9 +83,7 @@ paths:
           description: OK
           schema:
             items:
-              items:
-                type: string
-              type: array
+              type: string
             type: array
         "400":
           description: Bad Request
@@ -147,15 +145,13 @@ paths:
           description: OK
           schema:
             items:
-              items:
-                $ref: '#/definitions/main.ChatMessage'
-              type: array
+              $ref: '#/definitions/main.ChatMessage'
             type: array
         "400":
           description: Bad Request
         "404":
           description: Not Found
-      summary: gget new messages
+      summary: get new messages
       tags:
       - member
   /lobbies/{id}/members/{id2}/updates:
@@ -181,9 +177,7 @@ paths:
           description: OK
           schema:
             items:
-              items:
-                type: integer
-              type: array
+              type: integer
             type: array
         "400":
           description: Bad Request
