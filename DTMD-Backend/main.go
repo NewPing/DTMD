@@ -162,7 +162,7 @@ func getLobbyMembers(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        id2   path      string  true  "Member ID"
-// @Success      200  {array}   []int
+// @Success      200  int
 // @Failure      400
 // @Failure      404
 // @Router /lobbies/{id}/members/{id2}/updates [get]
@@ -170,12 +170,15 @@ func getUpdateInstructions(c *gin.Context) {
 	lobbyID := c.Param("id")
 	memberID := c.Param("id2")
 
+	var lobbys2 = lobbys
+	print(lobbys2)
+
 	if lobby, exists := lobbys[lobbyID]; exists {
 
 		for _, m := range lobby.Members {
 			if m.ID == memberID {
 				c.JSON(http.StatusOK, gin.H{"id": m.UpdateInstructions})
-				m.UpdateInstructions = []int{}
+				//m.UpdateInstructions = []int{}
 				lobbys[lobbyID] = lobby
 				return
 			}
@@ -227,7 +230,15 @@ func notifyLobbyMembers(lobbyID string, updateInstructionType int) {
 	if lobby, exists := lobbys[lobbyID]; exists {
 		for _, member := range lobby.Members {
 			member.UpdateInstructions = append(member.UpdateInstructions, updateInstructionType)
+
 		}
 		lobbys[lobbyID] = lobby
+
+		for _, member := range lobbys[lobbyID].Members {
+			println(member.Name)
+			for _, update := range member.UpdateInstructions {
+				println(update)
+			}
+		}
 	}
 }
