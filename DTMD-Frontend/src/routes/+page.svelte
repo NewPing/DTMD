@@ -2,9 +2,10 @@
 	import '../app.postcss';
 	import { popup } from '@skeletonlabs/skeleton';
 	import type { PopupSettings } from '@skeletonlabs/skeleton';
-	import { Api, type MainCreateLobbyRequest } from '../dtmd_api';
+	import { Api, type MainCreateLobbyRequest, type MainJoinLobbyRequest } from '../dtmd_api';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
+	import {LobbyName,LobbyID,MemberID} from '../stores.js';
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	const api = new Api({
@@ -31,12 +32,12 @@
 		//Defines which element closes poupup
 		closeQuery: ''
 	};
-
+	let userID = '';
 	let roomname = '';
 	let username = '';
 	let errorMessage = '';
 	let disableCreateButton = false;
-	function createRoom() {
+	async function createRoom() {
 		//Check input
 		if(roomname === ''){
 			errorMessage = "Please enter a room name.";
@@ -53,18 +54,36 @@
 			return;
 		}
 		disableCreateButton=true;
-
+		var pin = await createLobbyAPICall(roomname);
+		var userID = await joinLobbyAPICall(pin,username);
+		MemberID.set(userID);
+		LobbyID.set(pin);
+		LobbyName.set(roomname);
+		console.log("successfull creation",userID);
+		disableCreateButton=false;
     }
 	async function createLobbyAPICall(lobbyName:string): Promise<string>{
-		const lobbyRequest: MainCreateLobbyRequest = {
+		const lobbyCreateRequest: MainCreateLobbyRequest = {
     		name: lobbyName
 		};
-		const res = await api.lobbies.lobbiesCreate(lobbyRequest);
+		const res = await api.lobbies.lobbiesCreate(lobbyCreateRequest);
 		if (res.ok) {
-			const jsonResponse: ApiResponse = await res.json();
-			
+			const lobbyPin =  await res.text();
+			return lobbyPin;
 		} else {
-			throw new Error("Failed to fetch member list");
+			throw new Error("Failed to create lobby.");
+		}
+	}
+	async function joinLobbyAPICall(pin:string,username:string): Promise<string>{
+		const lobbyJoinREquest: MainJoinLobbyRequest = {
+    		nickname: username
+		};
+		const res = await api.lobbies.membersCreate(pin,lobbyJoinREquest)
+		if (res.ok) {
+			var userID =  await res.text();
+			return userID;
+		} else {
+			throw new Error("Failed to join lobby.");
 		}
 	}
 </script>
@@ -93,7 +112,7 @@
 		{#if errorMessage}
 		<p class="text-red-500 mt-2">{errorMessage}</p>
 		{/if}
-		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={createRoom} >Create</button>
+		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={createRoom} disabled = {disableCreateButton} >Create</button>
 	</div>
 </div>
 

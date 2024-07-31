@@ -254,12 +254,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @request POST:/lobbies
 		 */
 		lobbiesCreate: (lobby: MainCreateLobbyRequest, params: RequestParams = {}) =>
-			this.request<number, void>({
+			this.request<string, void>({
 				path: `/lobbies`,
 				method: 'POST',
 				body: lobby,
 				type: ContentType.Json,
-				format: 'json',
 				...params
 			}),
 
