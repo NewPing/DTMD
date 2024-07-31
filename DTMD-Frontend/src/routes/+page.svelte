@@ -6,6 +6,7 @@
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
 	import {LobbyName,LobbyID,MemberID} from '../stores.js';
+	import { goto } from '$app/navigation';
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	const api = new Api({
@@ -61,6 +62,7 @@
 		LobbyName.set(roomname);
 		console.log("successfull creation",userID);
 		disableCreateButton=false;
+		goto('/lobby');
     }
 	async function createLobbyAPICall(lobbyName:string): Promise<string>{
 		const lobbyCreateRequest: MainCreateLobbyRequest = {

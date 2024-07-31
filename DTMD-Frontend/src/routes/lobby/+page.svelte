@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { LobbyID, LobbyName, MemberID } from './../../stores.js';
 	import '../../app.postcss';
 	import { SlideToggle, RadioGroup, RadioItem } from '@skeletonlabs/skeleton';
 
@@ -17,8 +18,28 @@
 	let numberOfDice: number = 1;
 	let diceType: number = 1;
 
-	onMount(() => {
+	let lobbyID = '';
+	let lobbyName = '';
+	let memberID = '';
 
+	onMount(() => {
+		const unsubscribeLobbyName = LobbyName.subscribe(value => {
+			lobbyName = value;
+		});
+
+		const unsubscribeLobbyID = LobbyID.subscribe(value => {
+			lobbyID = value;
+		});
+
+		const unsubscribeMemberID = MemberID.subscribe(value => {
+			memberID = value;
+		});
+
+		unsubscribeLobbyID();
+		unsubscribeLobbyName();
+		unsubscribeMemberID();
+
+		console.log("successfull join", lobbyID);
 	});
 
 	/*async function loadMembers(): Promise<MainMember[]> {
