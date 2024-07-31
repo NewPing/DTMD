@@ -315,6 +315,7 @@ func GetUserNameByID(lobbyID, userID string) string {
 
 func GenerateRandomNumber(xmax int) int {
 	return rand2.IntN(xmax) + 1
+
 }
 
 func generateUniqueLobbyID() string {
