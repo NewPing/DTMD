@@ -112,8 +112,9 @@ func joinLobby(c *gin.Context) {
 	}
 
 	var newMember = member{
-		ID:   generateUniqueMemberID(),
-		Name: req.Nickname,
+		ID:                 generateUniqueMemberID(),
+		Name:               req.Nickname,
+		UpdateInstructions: []int{},
 	}
 
 	if lobby, exists := lobbys[id]; exists {
@@ -121,9 +122,9 @@ func joinLobby(c *gin.Context) {
 		lobby.Members = append(lobby.Members, newMember)
 		lobbys[id] = lobby
 
-		c.JSON(http.StatusOK, gin.H{"id": newMember.ID})
+		c.JSON(http.StatusOK, newMember.ID)
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{"id": ""})
+		c.JSON(http.StatusNotFound, newMember.ID)
 	}
 }
 
@@ -147,9 +148,9 @@ func getLobbyMembers(c *gin.Context) {
 			membersNames = append(membersNames, m.Name)
 		}
 
-		c.JSON(http.StatusOK, gin.H{"id": membersNames})
+		c.JSON(http.StatusOK, membersNames)
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{"id": membersNames})
+		c.JSON(http.StatusNotFound, membersNames)
 	}
 }
 
@@ -175,7 +176,7 @@ func getUpdateInstructions(c *gin.Context) {
 	if lobby, exists := lobbys[lobbyID]; exists {
 		for i := range lobby.Members {
 			if lobby.Members[i].ID == memberID {
-				c.JSON(http.StatusOK, gin.H{"id": lobby.Members[i].UpdateInstructions})
+				c.JSON(http.StatusOK, lobby.Members[i].UpdateInstructions)
 				lobby.Members[i].UpdateInstructions = []int{}
 				lobbys[lobbyID] = lobby
 				return
@@ -183,7 +184,7 @@ func getUpdateInstructions(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusNotFound, gin.H{"id": []int{}})
+	c.JSON(http.StatusNotFound, []int{})
 }
 
 func generateUniqueLobbyID() string {
