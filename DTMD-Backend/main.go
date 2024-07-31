@@ -170,8 +170,8 @@ func rollDice(c *gin.Context) {
 	var msg = "Has rolled " + strconv.Itoa(*req.NumberOfRolls) + " w" + strconv.Itoa(*req.DiceType)
 	var result = 0
 	for i := 0; i < *req.NumberOfRolls; i++ {
-		var number = GenerateRandomNumber(1, *req.DiceType)
-		result += number
+		var number = GenerateRandomNumber(*req.DiceType)
+		result = result + number
 	}
 
 	msg += ", result: " + strconv.Itoa(result)
@@ -223,7 +223,7 @@ func getLobbyName(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
-// @Success      200  {array}   []string
+// @Success      200  {array}   string
 // @Failure      400
 // @Failure      404
 // @Router /lobbies/{id}/members [get]
@@ -243,14 +243,14 @@ func getLobbyMembers(c *gin.Context) {
 }
 
 // GetNewChatMessages godoc
-// @Summary      gget new messages
+// @Summary      get new messages
 // @Description  get all new chat messages for this specific member
 // @Tags         member
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        id2  path      string  true  "Member ID"
-// @Success      200  {array}   []ChatMessage
+// @Success      200  {array}   ChatMessage
 // @Failure      400
 // @Failure      404
 // @Router /lobbies/{id}/members/{id2}/messages [get]
@@ -280,7 +280,7 @@ func getNewChatMessages(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        id2   path      string  true  "Member ID"
-// @Success      200  {array}   []int
+// @Success      200  {array}   int
 // @Failure      400
 // @Failure      404
 // @Router /lobbies/{id}/members/{id2}/updates [get]
@@ -313,8 +313,8 @@ func GetUserNameByID(lobbyID, userID string) string {
 	return "undefined"
 }
 
-func GenerateRandomNumber(xmin, xmax int) int {
-	return rand2.IntN(xmax-xmin) + xmin
+func GenerateRandomNumber(xmax int) int {
+	return rand2.IntN(xmax) + 1
 }
 
 func generateUniqueLobbyID() string {

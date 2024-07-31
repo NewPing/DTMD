@@ -72,10 +72,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                                "type": "string"
                             }
                         }
                     },
@@ -145,7 +142,7 @@
                 "tags": [
                     "member"
                 ],
-                "summary": "gget new messages",
+                "summary": "get new messages",
                 "parameters": [
                     {
                         "type": "string",
@@ -168,10 +165,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/main.ChatMessage"
-                                }
+                                "$ref": "#/definitions/main.ChatMessage"
                             }
                         }
                     },
@@ -219,10 +213,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "type": "integer"
-                                }
+                                "type": "integer"
                             }
                         }
                     },

@@ -83,10 +83,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                                "type": "string"
                             }
                         }
                     },
@@ -156,7 +153,7 @@ const docTemplate = `{
                 "tags": [
                     "member"
                 ],
-                "summary": "gget new messages",
+                "summary": "get new messages",
                 "parameters": [
                     {
                         "type": "string",
@@ -179,10 +176,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/main.ChatMessage"
-                                }
+                                "$ref": "#/definitions/main.ChatMessage"
                             }
                         }
                     },
@@ -230,10 +224,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "type": "array",
-                                "items": {
-                                    "type": "integer"
-                                }
+                                "type": "integer"
                             }
                         }
                     },
