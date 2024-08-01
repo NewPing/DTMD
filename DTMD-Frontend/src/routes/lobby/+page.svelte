@@ -11,7 +11,7 @@
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
 	const api = new Api({
-		baseUrl: "http://localhost:8080",
+		baseUrl: "https://diceapi.odysseyinvision.com",
 	});
 
 	const popupClipboard: PopupSettings = {
