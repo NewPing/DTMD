@@ -1,9 +1,9 @@
 definitions:
   main.ChatMessage:
     properties:
-      id:
+      message:
         type: string
-      name:
+      sender:
         type: string
     type: object
   main.createLobbyRequest:
@@ -215,7 +215,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: lets a user join a lobby
+      description: roll dice and send back integer result in string form
       parameters:
       - description: Lobby ID
         in: path
@@ -234,12 +234,12 @@ paths:
         "200":
           description: OK
           schema:
-            type: int
+            type: string
         "400":
           description: Bad Request
         "500":
           description: Internal Server Error
-      summary: Join an existing Lobby
+      summary: Roll dice post request
       tags:
       - lobbies
 swagger: "2.0"

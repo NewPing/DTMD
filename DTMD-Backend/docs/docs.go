@@ -277,7 +277,7 @@ const docTemplate = `{
         },
         "/lobbies/{id}/rolldice": {
             "post": {
-                "description": "lets a user join a lobby",
+                "description": "roll dice and send back integer result in string form",
                 "consumes": [
                     "application/json"
                 ],
@@ -287,7 +287,7 @@ const docTemplate = `{
                 "tags": [
                     "lobbies"
                 ],
-                "summary": "Join an existing Lobby",
+                "summary": "Roll dice post request",
                 "parameters": [
                     {
                         "type": "string",
@@ -310,7 +310,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "int"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -327,10 +327,10 @@ const docTemplate = `{
         "main.ChatMessage": {
             "type": "object",
             "properties": {
-                "id": {
+                "message": {
                     "type": "string"
                 },
-                "name": {
+                "sender": {
                     "type": "string"
                 }
             }

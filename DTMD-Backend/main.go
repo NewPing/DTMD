@@ -28,8 +28,8 @@ type member struct {
 }
 
 type ChatMessage struct {
-	Sender  string `json:"id"`
-	Message string `json:"name"`
+	Sender  string `json:"sender"`
+	Message string `json:"message"`
 }
 
 type lobby struct {

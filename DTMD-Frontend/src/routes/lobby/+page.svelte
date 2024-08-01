@@ -6,7 +6,7 @@
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
-	import { Api, type MainRollDiceRequest } from '../../dtmd_api';
+	import { Api, type MainRollDiceRequest,type MainChatMessage } from '../../dtmd_api';
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
@@ -22,12 +22,14 @@
 	};
 	//constants
 	let updateMemberList:number = 0;
+	let updateChat:number = 1;
 	//style
 	let lobbyName = '';
 	let numberRolled = 42;
 	let tempRollNumber : number;
 	let isRolling = false;
 	let receivedRoll = false;
+	let chatMessages:MainChatMessage[] = [];
 	//lobbyState
 	let members : string[] = [];
 	let isPrivateMessage: boolean = false;
@@ -63,50 +65,58 @@
 
 	async function fetchMembers(): Promise<string[]> {
 		const res = await api.lobbies.membersDetail(lobbyID);
-		if (res.ok) {
-			const response = await res.json();
-			if (Array.isArray(response)) {
-				return response; 
-			} else {
-				throw new Error('Error fetching members, not array of strings.');
-			}
-		} else {
+		if (!res.ok) {
 			throw new Error("Failed to fetch member list");
 		}
+		const response = await res.json();
+		if (!Array.isArray(response)) {
+			throw new Error('Error fetching members, not array of strings.');
+		}
+		return response; 
 	}
+
+	async function fetchChatMessages(): Promise<MainChatMessage[]> {
+		const res = await api.lobbies.membersMessagesDetail(lobbyID,memberID);
+		if (!res.ok) {
+			throw new Error("Failed to fetch chat messages.");
+		}
+		const response = await res.json();
+		if (!Array.isArray(response)) {
+			throw new Error('Error fetching members, not array of strings.');
+		}
+		return response; 
+	}
+
 	async function loadLobbyName(): Promise<string> {
 		const res = await api.lobbies.nameDetail(lobbyID);
-		if (res.ok) {
-			const lobbyName = await res.text()
-			return lobbyName;
-		} else {
+		if (!res.ok) {
 			throw new Error("Failed to fetch lobby name");
 		}
+		const lobbyName = await res.text()
+		return lobbyName;
 	}
 	function copyPinToClipboard(pin:string) {
 		navigator.clipboard.writeText(pin)
  	}
 	async function fetchUpdates(): Promise<number[]> {
 		const res = await api.lobbies.membersUpdatesDetail(lobbyID,memberID);
-		if (res.ok) {
-			const response = await res.json();
-            if (Array.isArray(response)) {
-                // Map and parse each item to ensure it's a number
-                const parsedResponse = response.map(item => {
-                    // Assuming the items are strings that should be parsed to integers
-                    const parsedItem = parseInt(item, 10);
-                    if (isNaN(parsedItem)) {
-                        throw new Error('Data contains non-numeric values');
-                    }
-                    return parsedItem;
-                });
-				return parsedResponse;
-			} else {
-				throw new Error('Error fetching members, not array of strings.');
-			}
-		} else {
+		if (!res.ok) {
 			throw new Error("Failed to fetch member list");
 		}
+		const response = await res.json();
+		if (!Array.isArray(response)) {
+			throw new Error('Error fetching members, not array of strings.');
+		}
+		// Map and parse each item to ensure it's a number
+		const parsedResponse = response.map(item => {
+			// Assuming the items are strings that should be parsed to integers
+			const parsedItem = parseInt(item, 10);
+			if (isNaN(parsedItem)) {
+				throw new Error('Data contains non-numeric values');
+			}
+			return parsedItem;
+		});
+		return parsedResponse;
 	}
 	async function postRoll() : Promise<number>{
 		const rollDiceRequest : MainRollDiceRequest = {
@@ -133,6 +143,11 @@
 					members = fetchedMembers;
 					});
 				}
+				if(updates.includes(updateChat)){
+					fetchChatMessages().then(fetchedChatMessages => {
+						chatMessages = [...chatMessages,...fetchedChatMessages]
+					});
+				}
 			});
 		}, 500); 
 			return () => clearInterval(interval);
@@ -141,26 +156,30 @@
 	function startRoll() {
 		tempRollNumber = 0;
 		receivedRoll = false;
-		postRoll().then( rollResult => {
-			//when receiving roll from API then notify rollTimer
-			tempRollNumber = rollResult;
-			receivedRoll = true;
-		});
 		//make sure only one roll running at a time
 		if (isRolling) return; 
 		isRolling = true;
 		var passedTime = 0;
+		var changeInterval = 75;
 		const rollTimer = setInterval(() => {
-			passedTime += 10;
+			passedTime += changeInterval;
 			//display correct interval for possible results
 			numberRolled = Math.floor(Math.random() * (numberOfDice * diceType - numberOfDice + 1)) + numberOfDice
-			//show random numbers until 2 seconds and we have the actual number from api
-			if(passedTime > 200 && receivedRoll){
+			//show random numbers until we have the actual number from api
+			if(receivedRoll){
 				isRolling = false;
 				numberRolled = tempRollNumber;
 				clearInterval(rollTimer);
 			}
-		}, 75);
+			//send api request with 2 second delay to make it seem like actual roll is happening
+			if(passedTime > 1500 && !receivedRoll)
+			postRoll().then( rollResult => {
+				console.log("roll result from backend",rollResult)
+				//when receiving roll from API then notify that roll is received
+				tempRollNumber = rollResult;
+				receivedRoll = true;
+			});
+		}, changeInterval);
   	}
 
 </script>
@@ -248,34 +267,14 @@
 		</main>
 
 		<div class="bg-surface-500/5 p-4 h-screen overflow-y-auto col-span-2">
+			{#each chatMessages as { message, sender }}
 			<div class="card p-4 variant-soft mb-3">
-				<header class="flex justify-between items-center">
-					<p class="font-bold" style="color: lightblue">AromaticA</p>
-				</header>
-				<p style="overflow-wrap: break-word;">Hello World!</p>
+			  <header class="flex justify-between items-center">
+				<p class="font-bold">{sender}</p>
+			  </header>
+			  <p style="overflow-wrap: break-word;">{message}</p>
 			</div>
-
-			<div class="card p-4 variant-soft mb-3">
-				<header class="flex justify-between items-center">
-					<p class="font-bold" style="color: lightgreen">JullyJ</p>
-				</header>
-				<p style="overflow-wrap: break-word;">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.</p>
-			</div>
-
-			<div class="card p-4 variant-soft mb-3">
-				<header class="flex justify-between items-center">
-					<p class="font-bold" style="color: lightpink">PeterBliat</p>
-				</header>
-				<p style="overflow-wrap: break-word;">Where does it come from?</p>
-			</div>
-
-			<div class="card p-4 variant-soft mb-3">
-				<header class="flex justify-between items-center">
-					<p class="font-bold" style="color: lightblue">AromaticA</p>
-				</header>
-				<p style="overflow-wrap: break-word;">Contrary to popular belief, Lorem Ipsum is not simply random text.</p>
-			</div>
-			
+		  	{/each}
 		</div>
 	</div>
 	<!-- Footer -->

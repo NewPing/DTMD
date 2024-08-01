@@ -10,8 +10,8 @@
  */
 
 export interface MainChatMessage {
-	id?: string;
-	name?: string;
+	message?: string;
+	sender?: string;
 }
 
 export interface MainCreateLobbyRequest {
@@ -359,15 +359,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 			}),
 
 		/**
-		 * @description lets a user join a lobby
+		 * @description roll dice and send back integer result in string form
 		 *
 		 * @tags lobbies
 		 * @name RolldiceCreate
-		 * @summary Join an existing Lobby
+		 * @summary Roll dice post request
 		 * @request POST:/lobbies/{id}/rolldice
 		 */
 		rolldiceCreate: (id: string, lobby: MainRollDiceRequest, params: RequestParams = {}) =>
-			this.request<int, void>({
+			this.request<string, void>({
 				path: `/lobbies/${id}/rolldice`,
 				method: 'POST',
 				body: lobby,
