@@ -77,7 +77,7 @@ func main() {
 	router.GET("/lobbies/:id/members/:id2/updates", getUpdateInstructions)
 	router.GET("/lobbies/:id/members/:id2/messages", getNewChatMessages)
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }
 
 // CreateLobby godoc
