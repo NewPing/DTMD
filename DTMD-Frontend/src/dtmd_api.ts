@@ -23,10 +23,10 @@ export interface MainJoinLobbyRequest {
 }
 
 export interface MainRollDiceRequest {
-	diceType: number;
-	isPrivateRoll: boolean;
-	memberID: string;
-	numberOfRolls: number;
+	DiceType: number;
+	IsPrivateRoll: number;
+	MemberID: string;
+	NumberOfRolls: number;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -283,7 +283,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @request GET:/lobbies/{id}/members
 		 */
 		membersDetail: (id: string, params: RequestParams = {}) =>
-			this.request<string[][], void>({
+			this.request<string[], void>({
 				path: `/lobbies/${id}/members`,
 				method: 'GET',
 				type: ContentType.Json,
@@ -305,7 +305,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 				method: 'POST',
 				body: lobby,
 				type: ContentType.Json,
-				format: 'json',
 				...params
 			}),
 
@@ -314,11 +313,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 *
 		 * @tags member
 		 * @name MembersMessagesDetail
-		 * @summary gget new messages
+		 * @summary get new messages
 		 * @request GET:/lobbies/{id}/members/{id2}/messages
 		 */
 		membersMessagesDetail: (id: string, id2: string, params: RequestParams = {}) =>
-			this.request<MainChatMessage[][], void>({
+			this.request<MainChatMessage[], void>({
 				path: `/lobbies/${id}/members/${id2}/messages`,
 				method: 'GET',
 				type: ContentType.Json,
@@ -335,7 +334,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @request GET:/lobbies/{id}/members/{id2}/updates
 		 */
 		membersUpdatesDetail: (id: string, id2: string, params: RequestParams = {}) =>
-			this.request<number[][], void>({
+			this.request<number[], void>({
 				path: `/lobbies/${id}/members/${id2}/updates`,
 				method: 'GET',
 				type: ContentType.Json,
@@ -356,7 +355,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 				path: `/lobbies/${id}/name`,
 				method: 'GET',
 				type: ContentType.Json,
-				format: 'json',
 				...params
 			}),
 
@@ -374,7 +372,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 				method: 'POST',
 				body: lobby,
 				type: ContentType.Json,
-				format: 'json',
 				...params
 			})
 	};

@@ -6,7 +6,7 @@
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
-	import { Api, /*type MainMember*/ } from '../../dtmd_api';
+	import { Api, type MainRollDiceRequest } from '../../dtmd_api';
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
@@ -31,8 +31,10 @@
 	//lobbyState
 	let members : string[] = [];
 	let isPrivateMessage: boolean = false;
+	//bind number variable to state of boolean variable cause backend needs a number
+	$: isPrivateRoll = isPrivateMessage ? 1 : 0;
 	let numberOfDice: number = 1;
-	let diceType: number = 1;
+	let diceType: number = 4;
 
 	let lobbyID = '';
 	let memberID = '';
@@ -106,6 +108,21 @@
 			throw new Error("Failed to fetch member list");
 		}
 	}
+	async function postRoll() : Promise<number>{
+		const rollDiceRequest : MainRollDiceRequest = {
+			DiceType: diceType,
+			IsPrivateRoll: isPrivateRoll,
+			MemberID: memberID,
+			NumberOfRolls: numberOfDice,
+		};
+		const res = await api.lobbies.rolldiceCreate(lobbyID,rollDiceRequest);
+		if (!res.ok) {
+			throw new Error("Failed to post number roll.");
+		}
+		const resultText = await res.text();
+		const resultNumber = parseInt(resultText);
+		return resultNumber;
+	}
 
 	function fetchUpdateRoutine(){
 		//establish interval as timer function
@@ -122,17 +139,25 @@
 	}
 
 	function startRoll() {
-
+		tempRollNumber = 0;
+		receivedRoll = false;
+		postRoll().then( rollResult => {
+			//when receiving roll from API then notify rollTimer
+			tempRollNumber = rollResult;
+			receivedRoll = true;
+		});
+		//make sure only one roll running at a time
 		if (isRolling) return; 
 		isRolling = true;
 		var passedTime = 0;
 		const rollTimer = setInterval(() => {
 			passedTime += 10;
-			numberRolled = Math.floor(Math.random() * 99) + 1;
+			//display correct interval for possible results
+			numberRolled = Math.floor(Math.random() * (numberOfDice * diceType - numberOfDice + 1)) + numberOfDice
 			//show random numbers until 2 seconds and we have the actual number from api
-			if(passedTime > 200 /*&& receivedRoll*/){
+			if(passedTime > 200 && receivedRoll){
 				isRolling = false;
-				//numberRolled = tempRollNumber;
+				numberRolled = tempRollNumber;
 				clearInterval(rollTimer);
 			}
 		}, 75);
@@ -204,13 +229,13 @@
 						hover="hover:variant-soft-primary"
 						display="flex"
 					>
-						<RadioItem bind:group={diceType} name="justify" value={1}>4</RadioItem>
-						<RadioItem bind:group={diceType} name="justify" value={2}>6</RadioItem>
-						<RadioItem bind:group={diceType} name="justify" value={3}>8</RadioItem>
-						<RadioItem bind:group={diceType} name="justify" value={4}>10</RadioItem>
-						<RadioItem bind:group={diceType} name="justify" value={5}>12</RadioItem>
-						<RadioItem bind:group={diceType} name="justify" value={6}>16</RadioItem>
-						<RadioItem bind:group={diceType} name="justify" value={7}>20</RadioItem>
+						<RadioItem bind:group={diceType} name="justify" value={4}>4</RadioItem>
+						<RadioItem bind:group={diceType} name="justify" value={6}>6</RadioItem>
+						<RadioItem bind:group={diceType} name="justify" value={8}>8</RadioItem>
+						<RadioItem bind:group={diceType} name="justify" value={10}>10</RadioItem>
+						<RadioItem bind:group={diceType} name="justify" value={12}>12</RadioItem>
+						<RadioItem bind:group={diceType} name="justify" value={16}>16</RadioItem>
+						<RadioItem bind:group={diceType} name="justify" value={20}>20</RadioItem>
 					</RadioGroup>
 				</div>
 				<button type="button" class="btn btn-lg variant-filled-primary font-semibold" on:click={startRoll} disabled = {isRolling}>Roll!</button>
