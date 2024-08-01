@@ -150,14 +150,14 @@ func joinLobby(c *gin.Context) {
 }
 
 // RollDice godoc
-// @Summary      Join an existing Lobby
-// @Description  lets a user join a lobby
+// @Summary      Roll dice post request
+// @Description  roll dice and send back integer result in string form
 // @Tags         lobbies
 // @Accept       json
 // @Produce      plain
 // @Param        id    path     string  true  "Lobby ID"
 // @Param        lobby body     rollDiceRequest true "Roll Dice Request"
-// @Success      200   {int}    int
+// @Success      200   {string}    string
 // @Failure      400
 // @Failure      500
 // @Router /lobbies/{id}/rolldice [post]
