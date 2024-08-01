@@ -128,8 +128,10 @@
 		}
 	}
 </script>
+<div class="flex justify-center items-center mt-5"><img src="logo.png" alt="logo" style="height: 100px; width: auto;"></div>
 
-<h1 class="text-center text-7xl mt-3">Dont Touch My Dice!</h1>
+<h1 class="text-center text-8xl mt-3" style="font-weight: 900;">DTMD</h1>
+<h3 class="text-center text-2xl mt-1" style="color: #D4163C;">Don't Touch My Dice</h3>
 <div class="flex flex-col items-center justify-center text-center">
 	<button
 		class="btn variant-filled"
@@ -143,7 +145,7 @@
 
 </div>
 
-<div class="fixed bottom-5 w-full text-center">Welcome to DTMD, the ultimate online platform for virtual dice games!<br>Create a room, invite a few of your friends and get rolling!</div>
+<div class="fixed bottom-5 w-full text-center">Welcome to DTMD, an online platform for virtual dice games!<br>Create a room, invite a few of your friends and get rolling!</div>
 
 
 <div class="card p-4 w-72 shadow-xl" data-popup="popupCreateRoom">

@@ -190,14 +190,14 @@
 	<header class="bg-surface-100-800-token p-4">
 		<div class="grid grid-cols-2 gap-4">
 		  <div class="font-bold text-xl">
-			<span class="font-bold text-xl">DTMD - </span>
-			<span class="font-bold text-xl">{lobbyName === '' ? 'loading lobby name...' : lobbyName}</span>
+			<span class="font-bold text-xl" style="color: #D4163C; font-weight: 900;">DTMD </span>
+			<span class="font-bold text-xl">- {lobbyName === '' ? 'loading lobby name...' : lobbyName}</span>
 		  </div>
 		  <div class="text-right">
 			<span class="">Lobby PIN:</span>
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
-			<span class="hover:underline cursor-pointer" use:popup={popupClipboard} on:click={() => copyPinToClipboard(lobbyID)}>
+			<span class="hover:underline cursor-pointer" use:popup={popupClipboard} on:click={() => copyPinToClipboard(lobbyID)} style="color: #D4163C; font-weight: 700;">
 				{lobbyID === '' ? 'loading Pin...' : lobbyID}
 			</span>
 		  </div>
