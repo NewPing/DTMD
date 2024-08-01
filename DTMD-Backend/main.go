@@ -151,7 +151,6 @@ func joinLobby(c *gin.Context) {
 
 	if lobby, exists := lobbys[id]; exists {
 		notifyLobbyMembers(id, InstructionUpdateLobbyMembers)
-		notifyLobbyMembers(id, InstructionUpdateChat)
 		lobby.Members = append(lobby.Members, newMember)
 		lobbys[id] = lobby
 
@@ -199,11 +198,10 @@ func rollDice(c *gin.Context) {
 				} else {
 					notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
 				}
-
-				lobbys[id] = lobby
-				c.JSON(http.StatusOK, result)
 			}
 		}
+		lobbys[id] = lobby
+		c.JSON(http.StatusOK, result)
 	} else {
 		c.String(http.StatusBadRequest, strconv.Itoa(-1))
 	}
