@@ -10,7 +10,7 @@
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
 	const api = new Api({
-		baseUrl: "https://diceapi.odysseyinvision.com",
+		baseUrl: "https://dice.odysseyinvision.com/api",
 	});
 
 	const popupCreateRoom: PopupSettings = {
