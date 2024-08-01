@@ -78,16 +78,16 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))*/
 	// Swagger setup
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Routes
 
-	router.POST("/lobbies", createLobby)
-	router.POST("/lobbies/:id/members", joinLobby)
-	router.POST("/lobbies/:id/rolldice", rollDice)
-	router.GET("/lobbies/:id/name", getLobbyName)
-	router.GET("/lobbies/:id/members", getLobbyMembers)
-	router.GET("/lobbies/:id/members/:id2/updates", getUpdateInstructions)
-	router.GET("/lobbies/:id/members/:id2/messages", getNewChatMessages)
+	router.POST("/api/lobbies", createLobby)
+	router.POST("/api/lobbies/:id/members", joinLobby)
+	router.POST("/api/lobbies/:id/rolldice", rollDice)
+	router.GET("/api/lobbies/:id/name", getLobbyName)
+	router.GET("/api/lobbies/:id/members", getLobbyMembers)
+	router.GET("/api/lobbies/:id/members/:id2/updates", getUpdateInstructions)
+	router.GET("/api/lobbies/:id/members/:id2/messages", getNewChatMessages)
 
 	router.Run("0.0.0.0:8080")
 }
