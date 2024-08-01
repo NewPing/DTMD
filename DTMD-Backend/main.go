@@ -102,7 +102,7 @@ func main() {
 // @Success      200 {string} string
 // @Failure      400
 // @Failure      500
-// @Router /lobbies [post]
+// @Router /api/lobbies [post]
 func createLobby(c *gin.Context) {
 	var req createLobbyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -134,7 +134,7 @@ func createLobby(c *gin.Context) {
 // @Success      200  {string} string
 // @Failure      400
 // @Failure      500
-// @Router /lobbies/{id}/members [post]
+// @router /api/lobbies/{id}/members [post]
 func joinLobby(c *gin.Context) {
 	id := c.Param("id")
 	var req joinLobbyRequest
@@ -172,7 +172,7 @@ func joinLobby(c *gin.Context) {
 // @Success      200   {string}    string
 // @Failure      400
 // @Failure      500
-// @Router /lobbies/{id}/rolldice [post]
+// @router /api/lobbies/{id}/rolldice [post]
 func rollDice(c *gin.Context) {
 	id := c.Param("id")
 	var req rollDiceRequest
@@ -219,7 +219,7 @@ func rollDice(c *gin.Context) {
 // @Success      200  {string} string
 // @Failure      400
 // @Failure      500
-// @Router /lobbies/{id}/name [get]
+// @router /api/lobbies/{id}/name [get]
 func getLobbyName(c *gin.Context) {
 	id := c.Param("id")
 
@@ -240,7 +240,7 @@ func getLobbyName(c *gin.Context) {
 // @Success      200  {array}   string
 // @Failure      400
 // @Failure      404
-// @Router /lobbies/{id}/members [get]
+// @router /api/lobbies/{id}/members [get]
 func getLobbyMembers(c *gin.Context) {
 	id := c.Param("id")
 
@@ -267,7 +267,7 @@ func getLobbyMembers(c *gin.Context) {
 // @Success      200  {array}   ChatMessage
 // @Failure      400
 // @Failure      404
-// @Router /lobbies/{id}/members/{id2}/messages [get]
+// @router /api/lobbies/{id}/members/{id2}/messages [get]
 func getNewChatMessages(c *gin.Context) {
 	lobbyID := c.Param("id")
 	memberID := c.Param("id2")
@@ -297,7 +297,7 @@ func getNewChatMessages(c *gin.Context) {
 // @Success      200  {array}   int
 // @Failure      400
 // @Failure      404
-// @Router /lobbies/{id}/members/{id2}/updates [get]
+// @router /api/lobbies/{id}/members/{id2}/updates [get]
 func getUpdateInstructions(c *gin.Context) {
 	lobbyID := c.Param("id")
 	memberID := c.Param("id2")
