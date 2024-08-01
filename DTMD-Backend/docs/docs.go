@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/lobbies": {
+        "/api/lobbies": {
             "post": {
                 "description": "create a new lobby with the given name",
                 "consumes": [
@@ -55,7 +55,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lobbies/{id}/members": {
+        "/api/lobbies/{id}/members": {
             "get": {
                 "description": "get members of a specific lobby by ID",
                 "consumes": [
@@ -141,7 +141,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lobbies/{id}/members/{id2}/messages": {
+        "/api/lobbies/{id}/members/{id2}/messages": {
             "get": {
                 "description": "get all new chat messages for this specific member",
                 "consumes": [
@@ -189,7 +189,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lobbies/{id}/members/{id2}/updates": {
+        "/api/lobbies/{id}/members/{id2}/updates": {
             "get": {
                 "description": "Get update instructions of a specific member",
                 "consumes": [
@@ -237,7 +237,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lobbies/{id}/name": {
+        "/api/lobbies/{id}/name": {
             "get": {
                 "description": "return the name of the specified lobby",
                 "consumes": [
@@ -275,7 +275,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lobbies/{id}/rolldice": {
+        "/api/lobbies/{id}/rolldice": {
             "post": {
                 "description": "roll dice and send back integer result in string form",
                 "consumes": [

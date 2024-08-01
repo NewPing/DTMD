@@ -39,7 +39,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /lobbies:
+  /api/lobbies:
     post:
       consumes:
       - application/json
@@ -65,7 +65,7 @@ paths:
       summary: Create a new lobby
       tags:
       - lobbies
-  /lobbies/{id}/members:
+  /api/lobbies/{id}/members:
     get:
       consumes:
       - application/json
@@ -122,7 +122,7 @@ paths:
       summary: Join an existing Lobby
       tags:
       - lobbies
-  /lobbies/{id}/members/{id2}/messages:
+  /api/lobbies/{id}/members/{id2}/messages:
     get:
       consumes:
       - application/json
@@ -154,7 +154,7 @@ paths:
       summary: get new messages
       tags:
       - member
-  /lobbies/{id}/members/{id2}/updates:
+  /api/lobbies/{id}/members/{id2}/updates:
     get:
       consumes:
       - application/json
@@ -186,7 +186,7 @@ paths:
       summary: get member update instructions
       tags:
       - member
-  /lobbies/{id}/name:
+  /api/lobbies/{id}/name:
     get:
       consumes:
       - application/json
@@ -211,7 +211,7 @@ paths:
       summary: get lobby name
       tags:
       - lobbies
-  /lobbies/{id}/rolldice:
+  /api/lobbies/{id}/rolldice:
     post:
       consumes:
       - application/json
