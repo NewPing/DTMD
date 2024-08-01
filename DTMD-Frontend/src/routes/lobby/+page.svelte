@@ -24,6 +24,10 @@
 	let updateMemberList:number = 0;
 	//style
 	let lobbyName = '';
+	let numberRolled = 42;
+	let tempRollNumber : number;
+	let isRolling = false;
+	let receivedRoll = false;
 	//lobbyState
 	let members : string[] = [];
 	let isPrivateMessage: boolean = false;
@@ -117,6 +121,23 @@
 			return () => clearInterval(interval);
 	}
 
+	function startRoll() {
+
+		if (isRolling) return; 
+		isRolling = true;
+		var passedTime = 0;
+		const rollTimer = setInterval(() => {
+			passedTime += 10;
+			numberRolled = Math.floor(Math.random() * 99) + 1;
+			//show random numbers until 2 seconds and we have the actual number from api
+			if(passedTime > 200 /*&& receivedRoll*/){
+				isRolling = false;
+				//numberRolled = tempRollNumber;
+				clearInterval(rollTimer);
+			}
+		}, 75);
+  	}
+
 </script>
 
 
@@ -163,7 +184,7 @@
 		<!-- Main Content -->
 		<main class="space-y-4 p-4 flex h-screen overflow-auto col-span-3">
 			<div class="flex flex-col items-center w-full pt-4">
-				<SlideToggle name="slide" bind:checked={isPrivateMessage} size="sm"
+				<SlideToggle name="slide" bind:checked={isPrivateMessage} active="bg-primary-500" size="sm"
 					>{isPrivateMessage ? 'Private' : 'Public'} Roll</SlideToggle
 				>
 				<div class="pt-7">
@@ -176,8 +197,7 @@
                         <RadioItem bind:group={numberOfDice} name="justify" value={5}>5</RadioItem>
 					</RadioGroup>
 				</div>
-
-				<div class="pt-7">
+				<div class="pt-7 mb-8">
 					<h1 class="flex flex-col items-center mb-2">Dice Type</h1>
 					<RadioGroup
 						active="variant-filled-primary"
@@ -193,10 +213,11 @@
 						<RadioItem bind:group={diceType} name="justify" value={7}>20</RadioItem>
 					</RadioGroup>
 				</div>
+				<button type="button" class="btn btn-lg variant-filled-primary font-semibold" on:click={startRoll} disabled = {isRolling}>Roll!</button>
 				<!-- Big Number -->
-				 <div style="margin-top: 130px">&nbsp;</div>
+				 <div style="margin-top: 100px">&nbsp;</div>
 				<div class = "font-medium select-none" style="font-size: 240px;">
-					42
+				{numberRolled}
 				</div>
 			</div>
 		</main>
