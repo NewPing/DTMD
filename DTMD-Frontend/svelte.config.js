@@ -1,18 +1,33 @@
-import adapter from '@sveltejs/adapter-auto';
+import preprocess from 'svelte-preprocess';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import dotenv from 'dotenv';
+
+// Load environment variables
+const mode = process.env.NODE_ENV || 'development';
+dotenv.config({
+    path: mode === 'production' ? '.env.production' : '.env'
+});
+
+let adapter;
+if (mode === 'production') {
+    adapter = require('@sveltejs/adapter-node').default();
+} else {
+    adapter = require('@sveltejs/adapter-auto').default();
+}
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	extensions: ['.svelte'],
-	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
-	// for more information about preprocessors
-	preprocess: [vitePreprocess()],
-	
-	kit: {
-		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
-		// If your environment is not supported or you settled on a specific environment, switch out the adapter.
-		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
-		adapter: adapter()
-	}
+    extensions: ['.svelte'],
+    preprocess: [vitePreprocess()],
+
+    kit: {
+        adapter,
+        vite: {
+            define: {
+                'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL)
+            }
+        }
+    }
 };
+
 export default config;
