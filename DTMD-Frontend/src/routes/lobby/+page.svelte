@@ -11,7 +11,7 @@
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
 	const apiBase = new Api({
-		baseUrl: "https://dice.odysseyinvision.com/api",
+		baseUrl: "https://dice.odysseyinvision.com",
 	});
 
 	const api = apiBase.api;
