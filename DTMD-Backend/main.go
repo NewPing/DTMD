@@ -46,18 +46,6 @@ func main() {
 	lobbyManager = classes.NewLobbyManager()
 	router := gin.Default()
 	router.Use(cors.Default())
-	/*config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"https://dice.odysseyinvision.com", "http://localhost", "http://192.168.0.74"}
-	router.Use(cors.New(config))*/
-	// Configure CORS
-	/*router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://dice.odysseyinvision.com"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))*/
 	// Swagger setup
 	router.GET("/api/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Routes
