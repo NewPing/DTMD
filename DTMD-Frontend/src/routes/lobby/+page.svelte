@@ -35,6 +35,7 @@
 	let isRolling = false;
 	let receivedRoll = false;
 	let chatMessages:MainChatMessage[] = [];
+	let elemChat : HTMLElement;
 	//lobbyState
 	let members : string[] = [];
 	let isPrivateMessage: boolean = false;
@@ -151,6 +152,10 @@
 				if(updates.includes(updateChat)){
 					fetchChatMessages().then(fetchedChatMessages => {
 						chatMessages = [...chatMessages,...fetchedChatMessages]
+						// Timeout prevents race condition
+						setTimeout(() => {
+							scrollChatBottom('smooth');
+						}, 0);
 					});
 				}
 			});
@@ -186,6 +191,9 @@
 			});
 		}, changeInterval);
   	}
+	function scrollChatBottom(behavior?: ScrollBehavior): void {
+		elemChat.scrollTo({ top: elemChat.scrollHeight, behavior });
+	}
 
 </script>
 
@@ -270,7 +278,7 @@
 			</div>
 		</main>
 
-        <div class="bg-surface-500/5 p-4 overflow-y-auto col-span-2">
+        <div bind:this={elemChat} class="bg-surface-500/5 p-4 overflow-y-auto col-span-2">
 			{#each chatMessages as { message, sender }}
 			<div class="card p-4 variant-soft mb-3">
 			  <header class="flex justify-between items-center">
