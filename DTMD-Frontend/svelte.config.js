@@ -1,19 +1,11 @@
 import preprocess from 'svelte-preprocess';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
-import dotenv from 'dotenv';
+import adapterAuto from '@sveltejs/adapter-auto';
+import adapterNode from '@sveltejs/adapter-node';
+import { defineConfig } from 'vite';
 
-// Load environment variables
-const mode = process.env.NODE_ENV || 'development';
-dotenv.config({
-    path: mode === 'production' ? '.env.production' : '.env'
-});
-
-let adapter;
-if (mode === 'production') {
-    adapter = require('@sveltejs/adapter-node').default();
-} else {
-    adapter = require('@sveltejs/adapter-auto').default();
-}
+// Determine the environment
+const isProduction = process.env.NODE_ENV === 'production';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -21,13 +13,15 @@ const config = {
     preprocess: [vitePreprocess()],
 
     kit: {
-        adapter,
-        vite: {
-            define: {
-                'process.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL)
-            }
+        adapter: isProduction ? adapterNode() : adapterAuto(),
+    },
+
+    // Vite configuration should be directly here
+    vite: defineConfig({
+        define: {
+            'import.meta.env.VITE_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL)
         }
-    }
+    })
 };
 
 export default config;
