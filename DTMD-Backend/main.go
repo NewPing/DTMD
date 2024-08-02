@@ -391,7 +391,7 @@ func notifyLobbyMember(lobbyID string, memberID string, updateInstructionType in
 
 // Function that runs the background worker
 func startBackgroundWorker() {
-	ticker := time.NewTicker(2 * time.Minute)
+	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
 
 	for {
@@ -407,8 +407,9 @@ func startBackgroundWorker() {
 func doBackgroundWork() {
 	for _, lobby := range lobbyManager.GetAllLobbies() {
 		for _, member := range lobby.GetMembers() {
-			if time.Since(member.GetLastHeartBeat()) > 2*time.Minute {
+			if time.Since(member.GetLastHeartBeat()) > time.Minute {
 				lobby.RemoveMember(member.GetID())
+				notifyLobbyMembers(lobby.GetID(), InstructionUpdateLobbyMembers)
 			}
 		}
 
