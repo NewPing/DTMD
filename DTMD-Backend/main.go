@@ -1,9 +1,9 @@
 package main
 
 import (
+	"DTMD_API/classes"
 	_ "DTMD_API/docs" // replace with your actual project path
 	"net/http"
-	"slices"
 	"strconv"
 
 	"github.com/gin-contrib/cors"
@@ -17,26 +17,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
-var lobbys map[string]lobby
-
-// album represents data about a record album.
-type member struct {
-	ID                 string        `json:"id"`
-	Name               string        `json:"name"`
-	UpdateInstructions []int         `json:"updateInstructions"`
-	NewChatMessages    []ChatMessage `json:"newChatMessages"`
-}
-
-type ChatMessage struct {
-	Sender  string `json:"sender"`
-	Message string `json:"message"`
-}
-
-type lobby struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Members []member `json:"members"`
-}
+var lobbyManager *classes.LobbyManager
 
 // createLobbyRequest represents the request body for creating a new lobby.
 type createLobbyRequest struct {
@@ -62,7 +43,7 @@ const (
 )
 
 func main() {
-	lobbys = make(map[string]lobby)
+	lobbyManager = classes.NewLobbyManager()
 	router := gin.Default()
 	router.Use(cors.Default())
 	/*config := cors.DefaultConfig()
@@ -106,21 +87,15 @@ func main() {
 func createLobby(c *gin.Context) {
 	var req createLobbyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	id := generateUniqueLobbyID()
 
-	// Create a new lobby
-	var newLobby = lobby{
-		ID:      id,
-		Name:    req.Name,
-		Members: []member{},
-	}
-	lobbys[id] = newLobby
+	newLobby := classes.NewLobby(id, req.Name)
+	lobbyManager.AddLobby(newLobby)
 
-	// Return the ID of the new lobby
-	c.String(http.StatusOK, newLobby.ID)
+	c.String(http.StatusOK, newLobby.GetID())
 }
 
 // JoinLobby godoc
@@ -139,25 +114,24 @@ func joinLobby(c *gin.Context) {
 	id := c.Param("id")
 	var req joinLobbyRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var newMember = member{
-		ID:                 generateUniqueMemberID(),
-		Name:               req.Nickname,
-		UpdateInstructions: []int{},
+	newMember := classes.NewMember(generateUniqueMemberID(id), req.Nickname)
+
+	lobby, exists := lobbyManager.GetLobby(id)
+
+	if !exists {
+		c.String(http.StatusNotFound, "")
+		return
 	}
 
-	if lobby, exists := lobbys[id]; exists {
-		notifyLobbyMembers(id, InstructionUpdateLobbyMembers)
-		lobby.Members = append(lobby.Members, newMember)
-		lobbys[id] = lobby
+	notifyLobbyMembers(id, InstructionUpdateLobbyMembers)
+	lobby.AddMember(newMember)
 
-		c.String(http.StatusOK, newMember.ID)
-	} else {
-		c.String(http.StatusBadRequest, newMember.ID)
-	}
+	c.String(http.StatusOK, newMember.GetID())
+
 }
 
 // RollDice godoc
@@ -176,35 +150,37 @@ func rollDice(c *gin.Context) {
 	id := c.Param("id")
 	var req rollDiceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var msg = "Has rolled " + strconv.Itoa(*req.NumberOfRolls) + " w" + strconv.Itoa(*req.DiceType)
-	var result = 0
+	msg := "Has rolled " + strconv.Itoa(*req.NumberOfRolls) + " w" + strconv.Itoa(*req.DiceType)
+	result := 0
 	for i := 0; i < *req.NumberOfRolls; i++ {
-		var number = GenerateRandomNumber(*req.DiceType)
-		result = result + number
+		number := GenerateRandomNumber(*req.DiceType)
+		result += number
 	}
 
 	msg += ", result: " + strconv.Itoa(result)
 
-	if lobby, exists := lobbys[id]; exists {
-		for i := range lobby.Members {
-			if *req.IsPrivateRoll == 0 || lobby.Members[i].ID == req.MemberID {
-				lobby.Members[i].NewChatMessages = append(lobby.Members[i].NewChatMessages, ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
-				if *req.IsPrivateRoll == 0 {
-					notifyLobbyMembers(id, InstructionUpdateChat)
-				} else {
-					notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
-				}
+	lobby, exists := lobbyManager.GetLobby(id)
+	if !exists {
+		c.String(http.StatusNotFound, "")
+		return
+	}
+
+	for _, member := range lobby.GetMembers() {
+		if *req.IsPrivateRoll == 0 || member.GetID() == req.MemberID {
+			member.AddNewChatMessage(classes.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
+			if *req.IsPrivateRoll == 0 {
+				notifyLobbyMembers(id, InstructionUpdateChat)
+			} else {
+				notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
 			}
 		}
-		lobbys[id] = lobby
-		c.JSON(http.StatusOK, result)
-	} else {
-		c.String(http.StatusBadRequest, strconv.Itoa(-1))
 	}
+
+	c.String(http.StatusOK, strconv.Itoa(result))
 }
 
 // GetLobbyName godoc
@@ -221,11 +197,12 @@ func rollDice(c *gin.Context) {
 func getLobbyName(c *gin.Context) {
 	id := c.Param("id")
 
-	if lobby, exists := lobbys[id]; exists {
-		c.String(http.StatusOK, lobby.Name)
-	} else {
-		c.String(http.StatusBadRequest, "")
+	lobby, exists := lobbyManager.GetLobby(id)
+	if !exists {
+		c.String(http.StatusNotFound, "")
+		return
 	}
+	c.String(http.StatusOK, lobby.GetName())
 }
 
 // GetLobbyMembers godoc
@@ -243,15 +220,17 @@ func getLobbyMembers(c *gin.Context) {
 	id := c.Param("id")
 
 	var membersNames []string
-	if lobby, exists := lobbys[id]; exists {
-		for _, m := range lobby.Members {
-			membersNames = append(membersNames, m.Name)
-		}
 
-		c.JSON(http.StatusOK, membersNames)
-	} else {
-		c.JSON(http.StatusBadRequest, membersNames)
+	lobby, exists := lobbyManager.GetLobby(id)
+	if !exists {
+		c.JSON(http.StatusNotFound, membersNames)
+		return
 	}
+
+	for _, member := range lobby.GetMembers() {
+		membersNames = append(membersNames, member.GetName())
+	}
+	c.JSON(http.StatusOK, membersNames)
 }
 
 // GetNewChatMessages godoc
@@ -270,18 +249,22 @@ func getNewChatMessages(c *gin.Context) {
 	lobbyID := c.Param("id")
 	memberID := c.Param("id2")
 
-	if lobby, exists := lobbys[lobbyID]; exists {
-		for i := range lobby.Members {
-			if lobby.Members[i].ID == memberID {
-				c.JSON(http.StatusOK, lobby.Members[i].NewChatMessages)
-				lobby.Members[i].NewChatMessages = []ChatMessage{}
-				lobbys[lobbyID] = lobby
-				return
-			}
+	lobby, exists := lobbyManager.GetLobby(lobbyID)
+	if !exists {
+		c.JSON(http.StatusNotFound, []classes.ChatMessage{})
+		return
+	}
+
+	for _, member := range lobby.GetMembers() {
+		if member.GetID() == memberID {
+			messages := member.GetNewChatMessages()
+			member.ClearNewChatMessages()
+			c.JSON(http.StatusOK, messages)
+			return
 		}
 	}
 
-	c.JSON(http.StatusBadRequest, []ChatMessage{})
+	c.JSON(http.StatusBadRequest, []classes.ChatMessage{})
 }
 
 // GetMemberUpdateInstructions godoc
@@ -300,14 +283,18 @@ func getUpdateInstructions(c *gin.Context) {
 	lobbyID := c.Param("id")
 	memberID := c.Param("id2")
 
-	if lobby, exists := lobbys[lobbyID]; exists {
-		for i := range lobby.Members {
-			if lobby.Members[i].ID == memberID {
-				c.JSON(http.StatusOK, lobby.Members[i].UpdateInstructions)
-				lobby.Members[i].UpdateInstructions = []int{}
-				lobbys[lobbyID] = lobby
-				return
-			}
+	lobby, exists := lobbyManager.GetLobby(lobbyID)
+	if !exists {
+		c.JSON(http.StatusNotFound, []int{})
+		return
+	}
+
+	for _, member := range lobby.GetMembers() {
+		if member.GetID() == memberID {
+			instructions := member.GetUpdateInstructions()
+			member.ClearUpdateInstructions()
+			c.JSON(http.StatusOK, instructions)
+			return
 		}
 	}
 
@@ -315,11 +302,14 @@ func getUpdateInstructions(c *gin.Context) {
 }
 
 func GetUserNameByID(lobbyID, userID string) string {
-	if lobby, exists := lobbys[lobbyID]; exists {
-		for i := range lobby.Members {
-			if lobby.Members[i].ID == userID {
-				return lobby.Members[i].Name
-			}
+	lobby, exists := lobbyManager.GetLobby(lobbyID)
+	if !exists {
+		return "undefined"
+	}
+
+	for _, member := range lobby.GetMembers() {
+		if member.GetID() == userID {
+			return member.GetName()
 		}
 	}
 	return "undefined"
@@ -333,7 +323,7 @@ func GenerateRandomNumber(xmax int) int {
 func generateUniqueLobbyID() string {
 	id := generateRandomPin(6)
 	for {
-		if _, exists := lobbys[id]; exists {
+		if _, exists := lobbyManager.GetLobby(id); exists {
 			id = generateRandomPin(6)
 		} else {
 			break
@@ -342,15 +332,30 @@ func generateUniqueLobbyID() string {
 	return id
 }
 
-func generateUniqueMemberID() string {
+func generateUniqueMemberID(lobbyID string) string {
 	id := generateRandomPin(12)
+
+	lobby, exists := lobbyManager.GetLobby(lobbyID)
+	if !exists {
+		return "-1"
+	}
+
 	for {
-		if _, exists := lobbys[id]; exists {
-			id = generateRandomPin(6)
-		} else {
+		isDuplicate := false
+		for _, member := range lobby.GetMembers() {
+			if member.GetID() == id {
+				isDuplicate = true
+				break
+			}
+		}
+		if !isDuplicate {
+			// ID is unique, return it
 			break
 		}
+		// Generate a new ID if the current one is not unique
+		id = generateRandomPin(12)
 	}
+
 	return id
 }
 
@@ -369,29 +374,25 @@ func generateRandomPin(length int) string {
 }
 
 func notifyLobbyMembers(lobbyID string, updateInstructionType int) {
-	if lobby, exists := lobbys[lobbyID]; exists {
+	lobby, exists := lobbyManager.GetLobby(lobbyID)
+	if !exists {
+		return
+	}
 
-		for i := range lobby.Members {
-			containsInstructionType := slices.Contains(lobby.Members[i].UpdateInstructions, updateInstructionType)
-
-			if !containsInstructionType {
-				lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
-			}
-		}
+	for _, member := range lobby.GetMembers() {
+		member.AddUpdateInstruction(updateInstructionType)
 	}
 }
 
 func notifyLobbyMember(lobbyID string, memberID string, updateInstructionType int) {
-	if lobby, exists := lobbys[lobbyID]; exists {
+	lobby, exists := lobbyManager.GetLobby(lobbyID)
+	if !exists {
+		return
+	}
 
-		for i := range lobby.Members {
-			if lobby.Members[i].ID == memberID {
-				containsInstructionType := slices.Contains(lobby.Members[i].UpdateInstructions, updateInstructionType)
-
-				if !containsInstructionType {
-					lobby.Members[i].UpdateInstructions = append(lobby.Members[i].UpdateInstructions, updateInstructionType)
-				}
-			}
+	for _, member := range lobby.GetMembers() {
+		if member.GetID() == memberID {
+			member.AddUpdateInstruction(updateInstructionType)
 		}
 	}
 }
