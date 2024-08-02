@@ -161,13 +161,19 @@ func rollDice(c *gin.Context) {
 		return
 	}
 
+	chatMessage := models.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg, Timestamp: time.Now()}
 	for _, member := range lobby.GetMembers() {
-		if *req.IsPrivateRoll == 0 || member.GetID() == req.MemberID {
-			chatMessage := models.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg, Timestamp: time.Now()}
+		if *req.IsPrivateRoll == 0 || member.GetID() == req.MemberID { //if public roll or id = userID
 			member.AddNewChatMessage(chatMessage)
-			lobby.AddMessageToChatHistory(chatMessage)
-			notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
 		}
+	}
+	if *req.IsPrivateRoll == 0 {
+		//is public roll
+		notifyLobbyMembers(id, InstructionUpdateChat)
+		lobby.AddMessageToChatHistory(chatMessage)
+	} else {
+		//is private roll
+		notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
 	}
 
 	c.String(http.StatusOK, strconv.Itoa(result))
