@@ -10,9 +10,11 @@
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
-	const api = new Api({
+	const apiBase = new Api({
 		baseUrl: "https://dice.odysseyinvision.com/api",
 	});
+
+	const api = apiBase.api;
 
 	const popupClipboard: PopupSettings = {
 		event: 'click',
@@ -64,7 +66,7 @@
 	});
 
 	async function fetchMembers(): Promise<string[]> {
-		const res = await api.lobbies.membersDetail(lobbyID);
+		const res = await api.lobbiesMembersDetail(lobbyID);
 		if (!res.ok) {
 			throw new Error("Failed to fetch member list");
 		}
@@ -76,7 +78,7 @@
 	}
 
 	async function fetchChatMessages(): Promise<MainChatMessage[]> {
-		const res = await api.lobbies.membersMessagesDetail(lobbyID,memberID);
+		const res = await api.lobbiesMembersMessagesDetail(lobbyID,memberID);
 		if (!res.ok) {
 			throw new Error("Failed to fetch chat messages.");
 		}
@@ -88,7 +90,7 @@
 	}
 
 	async function loadLobbyName(): Promise<string> {
-		const res = await api.lobbies.nameDetail(lobbyID);
+		const res = await api.lobbiesNameDetail(lobbyID);
 		if (!res.ok) {
 			throw new Error("Failed to fetch lobby name");
 		}
@@ -99,7 +101,7 @@
 		navigator.clipboard.writeText(pin)
  	}
 	async function fetchUpdates(): Promise<number[]> {
-		const res = await api.lobbies.membersUpdatesDetail(lobbyID,memberID);
+		const res = await api.lobbiesMembersUpdatesDetail(lobbyID,memberID);
 		if (!res.ok) {
 			throw new Error("Failed to fetch member list");
 		}
@@ -125,7 +127,7 @@
 			MemberID: memberID,
 			NumberOfRolls: numberOfDice,
 		};
-		const res = await api.lobbies.rolldiceCreate(lobbyID,rollDiceRequest);
+		const res = await api.lobbiesRolldiceCreate(lobbyID,rollDiceRequest);
 		if (!res.ok) {
 			throw new Error("Failed to post number roll.");
 		}

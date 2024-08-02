@@ -256,18 +256,18 @@ export class HttpClient<SecurityDataType = unknown> {
  * @contact
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
-	lobbies = {
+	api = {
 		/**
 		 * @description create a new lobby with the given name
 		 *
 		 * @tags lobbies
 		 * @name LobbiesCreate
 		 * @summary Create a new lobby
-		 * @request POST:/lobbies
+		 * @request POST:/api/lobbies
 		 */
 		lobbiesCreate: (lobby: MainCreateLobbyRequest, params: RequestParams = {}) =>
 			this.request<string, void>({
-				path: `/lobbies`,
+				path: `/api/lobbies`,
 				method: 'POST',
 				body: lobby,
 				type: ContentType.Json,
@@ -278,13 +278,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @description get members of a specific lobby by ID
 		 *
 		 * @tags member
-		 * @name MembersDetail
+		 * @name LobbiesMembersDetail
 		 * @summary Get members of a lobby
-		 * @request GET:/lobbies/{id}/members
+		 * @request GET:/api/lobbies/{id}/members
 		 */
-		membersDetail: (id: string, params: RequestParams = {}) =>
+		lobbiesMembersDetail: (id: string, params: RequestParams = {}) =>
 			this.request<string[], void>({
-				path: `/lobbies/${id}/members`,
+				path: `/api/lobbies/${id}/members`,
 				method: 'GET',
 				type: ContentType.Json,
 				format: 'json',
@@ -295,13 +295,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @description lets a user join a lobby
 		 *
 		 * @tags lobbies
-		 * @name MembersCreate
+		 * @name LobbiesMembersCreate
 		 * @summary Join an existing Lobby
-		 * @request POST:/lobbies/{id}/members
+		 * @request POST:/api/lobbies/{id}/members
 		 */
-		membersCreate: (id: string, lobby: MainJoinLobbyRequest, params: RequestParams = {}) =>
+		lobbiesMembersCreate: (id: string, lobby: MainJoinLobbyRequest, params: RequestParams = {}) =>
 			this.request<string, void>({
-				path: `/lobbies/${id}/members`,
+				path: `/api/lobbies/${id}/members`,
 				method: 'POST',
 				body: lobby,
 				type: ContentType.Json,
@@ -312,13 +312,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @description get all new chat messages for this specific member
 		 *
 		 * @tags member
-		 * @name MembersMessagesDetail
+		 * @name LobbiesMembersMessagesDetail
 		 * @summary get new messages
-		 * @request GET:/lobbies/{id}/members/{id2}/messages
+		 * @request GET:/api/lobbies/{id}/members/{id2}/messages
 		 */
-		membersMessagesDetail: (id: string, id2: string, params: RequestParams = {}) =>
+		lobbiesMembersMessagesDetail: (id: string, id2: string, params: RequestParams = {}) =>
 			this.request<MainChatMessage[], void>({
-				path: `/lobbies/${id}/members/${id2}/messages`,
+				path: `/api/lobbies/${id}/members/${id2}/messages`,
 				method: 'GET',
 				type: ContentType.Json,
 				format: 'json',
@@ -329,13 +329,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @description Get update instructions of a specific member
 		 *
 		 * @tags member
-		 * @name MembersUpdatesDetail
+		 * @name LobbiesMembersUpdatesDetail
 		 * @summary get member update instructions
-		 * @request GET:/lobbies/{id}/members/{id2}/updates
+		 * @request GET:/api/lobbies/{id}/members/{id2}/updates
 		 */
-		membersUpdatesDetail: (id: string, id2: string, params: RequestParams = {}) =>
+		lobbiesMembersUpdatesDetail: (id: string, id2: string, params: RequestParams = {}) =>
 			this.request<number[], void>({
-				path: `/lobbies/${id}/members/${id2}/updates`,
+				path: `/api/lobbies/${id}/members/${id2}/updates`,
 				method: 'GET',
 				type: ContentType.Json,
 				format: 'json',
@@ -346,13 +346,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @description return the name of the specified lobby
 		 *
 		 * @tags lobbies
-		 * @name NameDetail
+		 * @name LobbiesNameDetail
 		 * @summary get lobby name
-		 * @request GET:/lobbies/{id}/name
+		 * @request GET:/api/lobbies/{id}/name
 		 */
-		nameDetail: (id: string, params: RequestParams = {}) =>
+		lobbiesNameDetail: (id: string, params: RequestParams = {}) =>
 			this.request<string, void>({
-				path: `/lobbies/${id}/name`,
+				path: `/api/lobbies/${id}/name`,
 				method: 'GET',
 				type: ContentType.Json,
 				...params
@@ -362,13 +362,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @description roll dice and send back integer result in string form
 		 *
 		 * @tags lobbies
-		 * @name RolldiceCreate
+		 * @name LobbiesRolldiceCreate
 		 * @summary Roll dice post request
-		 * @request POST:/lobbies/{id}/rolldice
+		 * @request POST:/api/lobbies/{id}/rolldice
 		 */
-		rolldiceCreate: (id: string, lobby: MainRollDiceRequest, params: RequestParams = {}) =>
+		lobbiesRolldiceCreate: (id: string, lobby: MainRollDiceRequest, params: RequestParams = {}) =>
 			this.request<string, void>({
-				path: `/lobbies/${id}/rolldice`,
+				path: `/api/lobbies/${id}/rolldice`,
 				method: 'POST',
 				body: lobby,
 				type: ContentType.Json,

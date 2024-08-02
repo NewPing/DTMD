@@ -3,11 +3,13 @@ package classes
 import (
 	"slices"
 	"sync"
+	"time"
 )
 
 type Member struct {
 	ID                 string
 	Name               string
+	lastHeartBeat      time.Time
 	updateInstructions []int
 	newChatMessages    []ChatMessage
 	mu                 sync.Mutex
@@ -18,6 +20,7 @@ func NewMember(id, name string) *Member {
 	return &Member{
 		ID:                 id,
 		Name:               name,
+		lastHeartBeat:      time.Now(),
 		updateInstructions: make([]int, 0),
 		newChatMessages:    make([]ChatMessage, 0),
 	}
@@ -41,6 +44,16 @@ func (m *Member) GetName() string {
 // SetName sets the Name of the member
 func (m *Member) SetName(name string) {
 	m.Name = name
+}
+
+// GetLastHeartBeat returns the LastHeartBeat of the member
+func (m *Member) GetLastHeartBeat() time.Time {
+	return m.lastHeartBeat
+}
+
+// SetLastHeartBeat sets the LastHeartBeat of the member
+func (m *Member) SetLastHeartBeat(lastHeartBeat time.Time) {
+	m.lastHeartBeat = lastHeartBeat
 }
 
 // GetUpdateInstruction returns the UpdateInstruction slice
