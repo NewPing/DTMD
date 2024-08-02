@@ -8,6 +8,7 @@
 	import { storePopup } from '@skeletonlabs/skeleton';
 	import { Api, type MainRollDiceRequest,type MainChatMessage } from '../../dtmd_api';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
     // A fallback for non-Vite environments
@@ -49,11 +50,20 @@
 
 	onMount(() => {
 		//Load stored variables
-		const unsubscribeLobbyID = LobbyID.subscribe(value => {https://discord.com/channels/@me/950465749590360064
+		const unsubscribeLobbyID = LobbyID.subscribe(value => {
+			if(value === null || value === undefined ||value ==='' ){
+				console.log("navigate back")
+				goto('/')
+			}
+			console.log(value)
 			lobbyID = value;
 		});
 
 		const unsubscribeMemberID = MemberID.subscribe(value => {
+			if(value === null || value === undefined ||value ==='' ){
+				console.log("navigate back")
+				goto('/')
+			}
 			memberID = value;
 		});
 		unsubscribeLobbyID();
@@ -163,7 +173,7 @@
 			return () => clearInterval(interval);
 	}
 
-	function startRoll() {
+	function startRoll(tmpDiceType : number, tmpNumberOfDice:number) {
 		tempRollNumber = 0;
 		receivedRoll = false;
 		//make sure only one roll running at a time
@@ -174,7 +184,7 @@
 		const rollTimer = setInterval(() => {
 			passedTime += changeInterval;
 			//display correct interval for possible results
-			numberRolled = Math.floor(Math.random() * (numberOfDice * diceType - numberOfDice + 1)) + numberOfDice
+			numberRolled = Math.floor(Math.random() * (tmpNumberOfDice * tmpDiceType - tmpNumberOfDice + 1)) + tmpNumberOfDice
 			//show random numbers until we have the actual number from api
 			if(receivedRoll){
 				isRolling = false;
@@ -269,7 +279,7 @@
 						<RadioItem bind:group={diceType} name="justify" value={20}>20</RadioItem>
 					</RadioGroup>
 				</div>
-				<button type="button" class="btn btn-lg variant-filled-primary font-semibold" on:click={startRoll} disabled = {isRolling}>Roll!</button>
+				<button type="button" class="btn btn-lg variant-filled-primary font-semibold" on:click={startRoll(diceType,numberOfDice)} disabled = {isRolling}>Roll!</button>
 				<!-- Big Number -->
 				 <div style="margin-top: 100px">&nbsp;</div>
 				<div class = "font-medium select-none" style="font-size: 240px;">
