@@ -1,8 +1,8 @@
 package main
 
 import (
-	"DTMD_API/classes"
 	_ "DTMD_API/docs" // replace with your actual project path
+	"DTMD_API/models"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,7 +18,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
 )
 
-var lobbyManager *classes.LobbyManager
+var lobbyManager *models.LobbyManager
 
 // createLobbyRequest represents the request body for creating a new lobby.
 type createLobbyRequest struct {
@@ -44,7 +44,7 @@ const (
 )
 
 func main() {
-	lobbyManager = classes.NewLobbyManager()
+	lobbyManager = models.NewLobbyManager()
 	router := gin.Default()
 	router.Use(cors.Default())
 	// Swagger setup
@@ -58,6 +58,8 @@ func main() {
 	router.GET("/api/lobbies/:id/members", getLobbyMembers)
 	router.GET("/api/lobbies/:id/members/:id2/updates", getUpdateInstructions)
 	router.GET("/api/lobbies/:id/members/:id2/messages", getNewChatMessages)
+
+	go startBackgroundWorker() //removes inactive clients and closes lobbys if no members are present
 
 	router.Run("0.0.0.0:8080")
 }
@@ -81,7 +83,7 @@ func createLobby(c *gin.Context) {
 	}
 	id := generateUniqueLobbyID()
 
-	newLobby := classes.NewLobby(id, req.Name)
+	newLobby := models.NewLobby(id, req.Name)
 	lobbyManager.AddLobby(newLobby)
 
 	c.String(http.StatusOK, newLobby.GetID())
@@ -107,7 +109,7 @@ func joinLobby(c *gin.Context) {
 		return
 	}
 
-	newMember := classes.NewMember(generateUniqueMemberID(id), req.Nickname)
+	newMember := models.NewMember(generateUniqueMemberID(id), req.Nickname)
 
 	lobby, exists := lobbyManager.GetLobby(id)
 
@@ -160,7 +162,7 @@ func rollDice(c *gin.Context) {
 
 	for _, member := range lobby.GetMembers() {
 		if *req.IsPrivateRoll == 0 || member.GetID() == req.MemberID {
-			member.AddNewChatMessage(classes.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
+			member.AddNewChatMessage(models.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
 			if *req.IsPrivateRoll == 0 {
 				notifyLobbyMembers(id, InstructionUpdateChat)
 			} else {
@@ -240,7 +242,7 @@ func getNewChatMessages(c *gin.Context) {
 
 	lobby, exists := lobbyManager.GetLobby(lobbyID)
 	if !exists {
-		c.JSON(http.StatusNotFound, []classes.ChatMessage{})
+		c.JSON(http.StatusNotFound, []models.ChatMessage{})
 		return
 	}
 
@@ -253,7 +255,7 @@ func getNewChatMessages(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusBadRequest, []classes.ChatMessage{})
+	c.JSON(http.StatusBadRequest, []models.ChatMessage{})
 }
 
 // GetMemberUpdateInstructions godoc
@@ -383,6 +385,35 @@ func notifyLobbyMember(lobbyID string, memberID string, updateInstructionType in
 	for _, member := range lobby.GetMembers() {
 		if member.GetID() == memberID {
 			member.AddUpdateInstruction(updateInstructionType)
+		}
+	}
+}
+
+// Function that runs the background worker
+func startBackgroundWorker() {
+	ticker := time.NewTicker(2 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// Do background work
+			doBackgroundWork()
+		}
+	}
+}
+
+// background work function - removes disconnected members and closes empty lobbys
+func doBackgroundWork() {
+	for _, lobby := range lobbyManager.GetAllLobbies() {
+		for _, member := range lobby.GetMembers() {
+			if time.Since(member.GetLastHeartBeat()) > 2*time.Minute {
+				lobby.RemoveMember(member.GetID())
+			}
+		}
+
+		if len(lobby.GetMembers()) == 0 {
+			lobbyManager.RemoveLobby(lobby.GetID())
 		}
 	}
 }

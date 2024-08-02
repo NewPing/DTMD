@@ -1,4 +1,4 @@
-package classes
+package models
 
 type ChatMessage struct {
 	Sender  string `json:"sender"`
