@@ -10,9 +10,12 @@
 	import { onMount } from 'svelte';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
 
-	const apiBase = new Api({
-		baseUrl: "https://dice.odysseyinvision.com",
-	});
+    // A fallback for non-Vite environments
+    const isServerSide = typeof window === 'undefined';
+    
+    const apiBase = new Api({
+        baseUrl: isServerSide ? process.env.VITE_API_BASE_URL : import.meta.env.VITE_API_BASE_URL
+    });
 
 	const api = apiBase.api;
 
