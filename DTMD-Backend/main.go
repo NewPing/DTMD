@@ -5,6 +5,7 @@ import (
 	_ "DTMD_API/docs" // replace with your actual project path
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -281,6 +282,7 @@ func getUpdateInstructions(c *gin.Context) {
 		if member.GetID() == memberID {
 			instructions := member.GetUpdateInstructions()
 			member.ClearUpdateInstructions()
+			member.SetLastHeartBeat(time.Now())
 			c.JSON(http.StatusOK, instructions)
 			return
 		}
