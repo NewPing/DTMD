@@ -9,9 +9,11 @@
 	import { goto } from '$app/navigation';
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
-	const api = new Api({
+	const apiBase = new Api({
 		baseUrl: "https://dice.odysseyinvision.com/api",
 	});
+
+	const api = apiBase.api;
 
 	const popupCreateRoom: PopupSettings = {
 		// Represents the type of event that opens/closed the popup
@@ -107,7 +109,7 @@
 		const lobbyCreateRequest: MainCreateLobbyRequest = {
     		name: lobbyName
 		};
-		const res = await api.lobbies.lobbiesCreate(lobbyCreateRequest);
+		const res = await api.lobbiesCreate(lobbyCreateRequest);
 		if (res.ok) {
 			const lobbyPin =  await res.text();
 			return lobbyPin;
@@ -119,7 +121,7 @@
 		const lobbyJoinREquest: MainJoinLobbyRequest = {
     		nickname: username
 		};
-		const res = await api.lobbies.membersCreate(pin,lobbyJoinREquest)
+		const res = await api.lobbiesMembersCreate(pin,lobbyJoinREquest)
 		if (res.ok) {
 			var userID =  await res.text();
 			return userID;
