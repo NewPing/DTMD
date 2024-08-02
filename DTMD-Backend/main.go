@@ -236,7 +236,7 @@ func getLobbyMembers(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
-// @Success      200  {array}   ChatMessage
+// @Success      200  {array}   models.ChatMessage
 // @Failure      400
 // @Failure      404
 // @router /api/lobbies/{id}/chathistory [get]
@@ -260,7 +260,7 @@ func getLobbyChatHistory(c *gin.Context) {
 // @Produce      json
 // @Param        id   path      string  true  "Lobby ID"
 // @Param        id2  path      string  true  "Member ID"
-// @Success      200  {array}   ChatMessage
+// @Success      200  {array}   models.ChatMessage
 // @Failure      400
 // @Failure      404
 // @router /api/lobbies/{id}/members/{id2}/messages [get]

@@ -55,6 +55,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/lobbies/{id}/chathistory": {
+            "get": {
+                "description": "Get the history of all chat messages of a specific lobby",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "lobby"
+                ],
+                "summary": "Get the chat history of a lobby",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Lobby ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ChatMessage"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
         "/api/lobbies/{id}/members": {
             "get": {
                 "description": "get members of a specific lobby by ID",
@@ -176,7 +217,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.ChatMessage"
+                                "$ref": "#/definitions/models.ChatMessage"
                             }
                         }
                     },
@@ -324,17 +365,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.ChatMessage": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "sender": {
-                    "type": "string"
-                }
-            }
-        },
         "main.createLobbyRequest": {
             "type": "object",
             "required": [
@@ -377,6 +407,20 @@ const docTemplate = `{
                 },
                 "NumberOfRolls": {
                     "type": "integer"
+                }
+            }
+        },
+        "models.ChatMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "sender": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
                 }
             }
         }
