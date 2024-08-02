@@ -55,6 +55,7 @@ func main() {
 	router.POST("/api/lobbies/:id/members", joinLobby)
 	router.POST("/api/lobbies/:id/rolldice", rollDice)
 	router.GET("/api/lobbies/:id/name", getLobbyName)
+	router.GET("/api/lobbies/:id/chathistory", getLobbyChatHistory)
 	router.GET("/api/lobbies/:id/members", getLobbyMembers)
 	router.GET("/api/lobbies/:id/members/:id2/updates", getUpdateInstructions)
 	router.GET("/api/lobbies/:id/members/:id2/messages", getNewChatMessages)
@@ -162,12 +163,10 @@ func rollDice(c *gin.Context) {
 
 	for _, member := range lobby.GetMembers() {
 		if *req.IsPrivateRoll == 0 || member.GetID() == req.MemberID {
-			member.AddNewChatMessage(models.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg})
-			if *req.IsPrivateRoll == 0 {
-				notifyLobbyMembers(id, InstructionUpdateChat)
-			} else {
-				notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
-			}
+			chatMessage := models.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg, Timestamp: time.Now()}
+			member.AddNewChatMessage(chatMessage)
+			lobby.AddMessageToChatHistory(chatMessage)
+			notifyLobbyMember(id, req.MemberID, InstructionUpdateChat)
 		}
 	}
 
@@ -222,6 +221,29 @@ func getLobbyMembers(c *gin.Context) {
 		membersNames = append(membersNames, member.GetName())
 	}
 	c.JSON(http.StatusOK, membersNames)
+}
+
+// GetLobbyChatHistory godoc
+// @Summary      Get the chat history of a lobby
+// @Description  Get the history of all chat messages of a specific lobby
+// @Tags         lobby
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Lobby ID"
+// @Success      200  {array}   ChatMessage
+// @Failure      400
+// @Failure      404
+// @router /api/lobbies/{id}/chathistory [get]
+func getLobbyChatHistory(c *gin.Context) {
+	id := c.Param("id")
+
+	lobby, exists := lobbyManager.GetLobby(id)
+	if !exists {
+		c.JSON(http.StatusNotFound, []models.ChatMessage{})
+		return
+	}
+
+	c.JSON(http.StatusOK, lobby.GetChatHistory())
 }
 
 // GetNewChatMessages godoc

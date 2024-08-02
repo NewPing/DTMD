@@ -5,10 +5,11 @@ import (
 )
 
 type Lobby struct {
-	ID      string    `json:"id"`
-	Name    string    `json:"name"`
-	members []*Member // Use a slice of pointers to Member
-	mu      sync.Mutex
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	members     []*Member // Use a slice of pointers to Member
+	ChatHistory []ChatMessage
+	mu          sync.Mutex
 }
 
 // NewLobby creates a new Lobby
@@ -67,4 +68,18 @@ func (l *Lobby) RemoveMember(id string) {
 			break
 		}
 	}
+}
+
+// GetChatHistory returns the ChatHistory of the lobby
+func (l *Lobby) GetChatHistory() []ChatMessage {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.ChatHistory
+}
+
+// AddMessageToChatHistory adds a new message to the ChatHistory of the lobby
+func (l *Lobby) AddMessageToChatHistory(message ChatMessage) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.ChatHistory = append(l.ChatHistory, message)
 }
