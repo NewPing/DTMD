@@ -184,8 +184,7 @@
 
 </script>
 
-
-<div class="grid h-screen grid-rows-[auto_1fr_auto]">
+<div class="grid h-screen grid-rows-[auto_1fr]">
 	<!-- Header -->
 	<header class="bg-surface-100-800-token p-4">
 		<div class="grid grid-cols-2 gap-4">
@@ -204,8 +203,8 @@
 		</div>
 	  </header>
 	<!-- Grid Columns -->
-	<div class="grid grid-cols-6">
-		<div class="bg-surface-500/5 p-4 flex h-screen overflow-y-auto">
+    <div class="grid grid-cols-6 overflow-hidden">
+        <div class="bg-surface-500/5 p-4 overflow-y-auto">
 			<nav class="list-nav" style="width: 100%;">
 				{#if members.length === 0}
 					<p>Loading members...</p>
@@ -226,7 +225,7 @@
 
 
 		<!-- Main Content -->
-		<main class="space-y-4 p-4 flex h-screen overflow-auto col-span-3">
+        <main class="space-y-4 p-4 flex flex-col overflow-auto col-span-3">
 			<div class="flex flex-col items-center w-full pt-4">
 				<SlideToggle name="slide" bind:checked={isPrivateMessage} active="bg-primary-500" size="sm"
 					>{isPrivateMessage ? 'Private' : 'Public'} Roll</SlideToggle
@@ -266,7 +265,7 @@
 			</div>
 		</main>
 
-		<div class="bg-surface-500/5 p-4 h-screen overflow-y-auto col-span-2">
+        <div class="bg-surface-500/5 p-4 overflow-y-auto col-span-2">
 			{#each chatMessages as { message, sender }}
 			<div class="card p-4 variant-soft mb-3">
 			  <header class="flex justify-between items-center">
@@ -277,8 +276,6 @@
 		  	{/each}
 		</div>
 	</div>
-	<!-- Footer -->
-	<footer class="bg-blue-500 p-4">(footer)</footer>
 </div>
 
 <div class="card p-4 variant-filled-primary" data-popup="popupClipboard">
