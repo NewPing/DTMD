@@ -134,12 +134,12 @@
 		});
 		return parsedResponse;
 	}
-	async function postRoll() : Promise<number>{
+	async function postRoll(tmpDiceType:number,tmpNumberOfDice:number) : Promise<number>{
 		const rollDiceRequest : MainRollDiceRequest = {
-			DiceType: diceType,
+			DiceType: tmpDiceType,
 			IsPrivateRoll: isPrivateRoll,
 			MemberID: memberID,
-			NumberOfRolls: numberOfDice,
+			NumberOfRolls: tmpNumberOfDice,
 		};
 		const res = await api.lobbiesRolldiceCreate(lobbyID,rollDiceRequest);
 		if (!res.ok) {
@@ -193,7 +193,7 @@
 			}
 			//send api request with 2 second delay to make it seem like actual roll is happening
 			if(passedTime > 1500 && !receivedRoll)
-			postRoll().then( rollResult => {
+			postRoll(tmpDiceType,tmpNumberOfDice).then( rollResult => {
 				console.log("roll result from backend",rollResult)
 				//when receiving roll from API then notify that roll is received
 				tempRollNumber = rollResult;
@@ -279,7 +279,7 @@
 						<RadioItem bind:group={diceType} name="justify" value={20}>20</RadioItem>
 					</RadioGroup>
 				</div>
-				<button type="button" class="btn btn-lg variant-filled-primary font-semibold" on:click={startRoll(diceType,numberOfDice)} disabled = {isRolling}>Roll!</button>
+				<button type="button" class="btn btn-lg variant-filled-primary font-semibold" on:click={() => startRoll(diceType, numberOfDice)} disabled = {isRolling}>Roll!</button>
 				<!-- Big Number -->
 				 <div style="margin-top: 100px">&nbsp;</div>
 				<div class = "font-medium select-none" style="font-size: 240px;">
