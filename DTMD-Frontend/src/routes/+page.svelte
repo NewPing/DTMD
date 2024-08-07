@@ -1,21 +1,24 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { popup } from '@skeletonlabs/skeleton';
-	import type { PopupSettings } from '@skeletonlabs/skeleton';
-	import { Api, type MainCreateLobbyRequest, type MainJoinLobbyRequest } from '../dtmd_api';
+	import type { PopupSettings, ToastSettings } from '@skeletonlabs/skeleton';
+	import { Api, type HttpResponse, type MainCreateLobbyRequest, type MainJoinLobbyRequest } from '../dtmd_api';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
 	import { LobbyID, MemberID } from '../stores.js';
 	import { goto } from '$app/navigation';
+	import { initializeStores, Toast } from '@skeletonlabs/skeleton';
+	import { getToastStore } from '@skeletonlabs/skeleton';
+	//inbuilt function from skeleton necessary for initialization
+	initializeStores();
+	const toastStore = getToastStore();
     storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
 
-    // A fallback for non-Vite environments
+    //Set base url for api to dev or prod 
     const isServerSide = typeof window === 'undefined';
-    
     const apiBase = new Api({
         baseUrl: isServerSide ? process.env.VITE_API_BASE_URL : import.meta.env.VITE_API_BASE_URL
     });
-
 	const api = apiBase.api;
 
 	const popupCreateRoom: PopupSettings = {
@@ -48,16 +51,16 @@
 	let disableCreateButton = false;
 	let disableJoinButton = false;
 
-	async function createRoom() {
+	async function createRoom(tmpRoomname:string,tmpUsernameCreate:string) {
 		//Check input
-		if(roomname === ''){
+		if(tmpRoomname === ''){
 			errorMessageCreate = "Please enter a room name.";
 			setTimeout(() => {
                 errorMessageCreate = '';
             }, 3000);
 			return;
 		}
-		if(usernameCreate === ''){
+		if(tmpUsernameCreate === ''){
 			errorMessageCreate = "Please enter a nickname.";
 			setTimeout(() => {
                 errorMessageCreate = '';
@@ -65,8 +68,36 @@
 			return;
 		}
 		disableCreateButton=true;
-		var pin = await createLobbyAPICall(roomname);
-		var userID = await joinLobbyAPICall(pin,usernameCreate);
+		try {
+			var pin = await createLobbyAPICall(tmpRoomname);
+			console.log("Lobby Created",pin);
+   		} catch (error) {
+			console.error('Error creating lobby:', error);
+			const t: ToastSettings = {
+				message: "Couldn't create room.",
+				timeout: 3000,
+				hideDismiss: true,
+				background: 'variant-filled-error'
+			};
+			toastStore.trigger(t);
+			disableCreateButton=false;
+			return;
+		}
+		try {
+			var userID = await joinLobbyAPICall(pin,tmpUsernameCreate);
+			console.log("Joined created lobby",pin);
+   		} catch (error) {
+			console.error('Error joining created lobby:', error);
+			const t: ToastSettings = {
+				message: "Couldn't join created room: "+ pin+".",
+				timeout: 3000,
+				hideDismiss: true,
+				background: 'variant-filled-error'
+			};
+			toastStore.trigger(t);
+			disableCreateButton=false;
+			return;
+		}
 		MemberID.set(userID);
 		LobbyID.set(pin);
 		console.log("successfull creation",userID);
@@ -74,9 +105,9 @@
 			disableCreateButton=false;
 		});
     }
-	async function joinRoom(){
+	async function joinRoom(tmpRoomPin:string, tmpUsernameJoin:string){
 		//Check input
-		if(roomPin === ''){
+		if(tmpRoomPin === ''){
 			errorMessageJoin = "Please enter a room-pin.";
 			setTimeout(() => {
 				errorMessageJoin = '';
@@ -84,14 +115,14 @@
 			return;
 		}
 		const validPin = /^[A-Z0-9]{6}$/;
-		if(!validPin.test(roomPin)){
+		if(!validPin.test(tmpRoomPin)){
 			errorMessageJoin = "Please enter a valid room pin.";
 			setTimeout(() => {
 				errorMessageJoin = '';
 			}, 3000);
 			return;
 		}
-		if(usernameJoin === ''){
+		if(tmpUsernameJoin === ''){
 			errorMessageJoin = "Please enter a nickname.";
 			setTimeout(() => {
                 errorMessageJoin = '';
@@ -99,9 +130,36 @@
 			return;
 		}
 		disableJoinButton=true;
-		var userID = await joinLobbyAPICall(roomPin,usernameJoin);
+		try {
+			var userID = await joinLobbyAPICall(tmpRoomPin,tmpUsernameJoin);
+			console.log("Joined lobby",tmpRoomPin);
+   		} catch (error) {
+			var errorCode = error as number;
+			console.error('Error joining lobby:', error);
+			//handle case if room doesn't exist
+			if(errorCode === 404 ){
+				const t: ToastSettings = {
+					message: "Room with pin: "+ tmpRoomPin+" doesn't exist.",
+					timeout: 3000,
+					hideDismiss: true,
+					background: 'variant-filled-error'
+				};
+				toastStore.trigger(t);
+				disableJoinButton=false;
+				return;
+			}
+			const t: ToastSettings = {
+				message: "Couldn't join room with pin: "+ tmpRoomPin+".",
+				timeout: 3000,
+				hideDismiss: true,
+				background: 'variant-filled-error'
+			};
+			toastStore.trigger(t);
+			disableJoinButton=false;
+			return;
+		}
 		MemberID.set(userID);
-		LobbyID.set(roomPin);
+		LobbyID.set(tmpRoomPin);
 		console.log("successful lobby join",userID);
 		goto('/lobby').then(() => {
 			disableJoinButton=false;
@@ -124,15 +182,21 @@
 		const lobbyJoinREquest: MainJoinLobbyRequest = {
     		nickname: username
 		};
-		const res = await api.lobbiesMembersCreate(pin,lobbyJoinREquest)
-		if (res.ok) {
+		//api throws error if http response not ok
+		try {
+			const res = await api.lobbiesMembersCreate(pin,lobbyJoinREquest)
+			if (!res.ok) {
+				throw new Error(res.statusText);
+			}
 			var userID =  await res.text();
 			return userID;
-		} else {
-			throw new Error("Failed to join lobby.");
+		} catch (error) {
+			const httpResponse = error as HttpResponse<any, any>;
+			throw httpResponse.status;
 		}
 	}
 </script>
+<Toast />
 <div class="flex justify-center items-center mt-5"><img src="logo.png" alt="logo" style="height: 100px; width: auto;"></div>
 
 <h1 class="text-center text-8xl mt-3" style="font-weight: 900;">DTMD</h1>
@@ -160,7 +224,7 @@
 		{#if errorMessageCreate}
 		<p class="text-red-500 mt-2">{errorMessageCreate}</p>
 		{/if}
-		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={createRoom} disabled = {disableCreateButton} >Create</button>
+		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={() => createRoom(roomname,usernameCreate)} disabled = {disableCreateButton} >Create</button>
 	</div>
 </div>
 
@@ -171,6 +235,6 @@
 		{#if errorMessageJoin}
 		<p class="text-red-500 mt-2">{errorMessageJoin}</p>
 		{/if}
-		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={joinRoom} disabled = {disableJoinButton} >Join</button>
+		<button class="btn variant-filled" style="margin-top: 2vh;" on:click={()=>joinRoom(roomPin,usernameJoin)} disabled = {disableJoinButton} >Join</button>
 	</div>
 </div>
