@@ -5,8 +5,9 @@
 	import { Api, type HttpResponse, type MainCreateLobbyRequest, type MainJoinLobbyRequest } from '../dtmd_api';
 	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
     import { storePopup } from '@skeletonlabs/skeleton';
-	import { LobbyID, MemberID } from '../stores.js';
+	import { LobbyID, MemberID,ErrorMessageStart } from '../stores.js';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { initializeStores, Toast } from '@skeletonlabs/skeleton';
 	import { getToastStore } from '@skeletonlabs/skeleton';
 	//inbuilt function from skeleton necessary for initialization
@@ -50,7 +51,21 @@
 	let errorMessageJoin = '';
 	let disableCreateButton = false;
 	let disableJoinButton = false;
-
+	onMount(() => {
+		//Check if we return from different page with error
+		const unsubscribeErrorMessageStart = ErrorMessageStart.subscribe(value => {
+			if(value != null && value !==''){
+				const t: ToastSettings = {
+					message: "Lobby no longer exists.",
+					timeout: 5000,
+					background: 'variant-filled-error'
+				};
+				toastStore.trigger(t);
+				ErrorMessageStart.set("");
+			}
+		});
+		unsubscribeErrorMessageStart();
+	});
 	async function createRoom(tmpRoomname:string,tmpUsernameCreate:string) {
 		//Check input
 		if(tmpRoomname === ''){

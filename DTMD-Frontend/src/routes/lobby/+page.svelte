@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { LobbyID, MemberID } from './../../stores.js';
+	import { LobbyID, MemberID, ErrorMessageStart } from './../../stores.js';
 	import '../../app.postcss';
 	import { SlideToggle, RadioGroup, RadioItem, type PopupSettings, popup } from '@skeletonlabs/skeleton';
 
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
-	import { Api, type MainRollDiceRequest,type MainChatMessage } from '../../dtmd_api';
+	import { Api, type MainRollDiceRequest,type MainChatMessage, type HttpResponse } from '../../dtmd_api';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
@@ -49,13 +49,14 @@
 	let memberID = '';
 
 	onMount(() => {
+		var initCheck = true;
 		//Load stored variables
 		const unsubscribeLobbyID = LobbyID.subscribe(value => {
 			if(value === null || value === undefined ||value ==='' ){
 				console.log("navigate back")
 				goto('/')
+				initCheck = false;
 			}
-			console.log(value)
 			lobbyID = value;
 		});
 
@@ -63,20 +64,22 @@
 			if(value === null || value === undefined ||value ==='' ){
 				console.log("navigate back")
 				goto('/')
+				initCheck = false;
 			}
 			memberID = value;
 		});
 		unsubscribeLobbyID();
 		unsubscribeMemberID();
-		console.log("successfull join", lobbyID);
-		//fetch lobby information
-		fetchMembers().then( fetchedMembers => {
-			members = fetchedMembers;
-		});
-		loadLobbyName().then( fetchedLobbyName => {
-			lobbyName = fetchedLobbyName;
-		});
-		fetchUpdateRoutine();
+		if(initCheck){
+			//fetch lobby information
+			fetchMembers().then( fetchedMembers => {
+				members = fetchedMembers;
+			});
+			loadLobbyName().then( fetchedLobbyName => {
+				lobbyName = fetchedLobbyName;
+			});
+			fetchUpdateRoutine();
+		}
 	});
 
 	async function fetchMembers(): Promise<string[]> {
@@ -153,7 +156,8 @@
 	function fetchUpdateRoutine(){
 		//establish interval as timer function
 		const interval = setInterval(() => {
-			fetchUpdates().then( updates => {
+			fetchUpdates()
+			.then( updates => {
 				if(updates.includes(updateMemberList)){
 					fetchMembers().then( fetchedMembers => {
 					members = fetchedMembers;
@@ -167,6 +171,17 @@
 							scrollChatBottom('smooth');
 						}, 0);
 					});
+				}
+			})
+			.catch(error =>{
+				const errorResponse = error as HttpResponse<any, any>;
+				console.log("error response fetch updates", errorResponse);
+				if(errorResponse.status === 404 || errorResponse.status === undefined){
+					clearInterval(interval);
+					LobbyID.set("");
+					MemberID.set("");
+					ErrorMessageStart.set("Room no longer exists.");
+					goto("/");
 				}
 			});
 		}, 500); 
