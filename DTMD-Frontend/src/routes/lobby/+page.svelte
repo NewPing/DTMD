@@ -83,59 +83,63 @@
 	});
 
 	async function fetchMembers(): Promise<string[]> {
-		const res = await api.lobbiesMembersDetail(lobbyID);
-		if (!res.ok) {
-			throw new Error("Failed to fetch member list");
+		try {
+			const res = await api.lobbiesMembersDetail(lobbyID);
+			const response = await res.json();
+			if (!Array.isArray(response)) {
+				throw new Error('Error fetching members, not array of strings.');
+			}
+			return response; 
+		} catch (error) {
+			throw error;
 		}
-		const response = await res.json();
-		if (!Array.isArray(response)) {
-			throw new Error('Error fetching members, not array of strings.');
-		}
-		return response; 
 	}
 
 	async function fetchChatMessages(): Promise<ModelsChatMessage[]> {
-		const res = await api.lobbiesMembersMessagesDetail(lobbyID,memberID);
-		if (!res.ok) {
-			throw new Error("Failed to fetch chat messages.");
+		try {
+			const res = await api.lobbiesMembersMessagesDetail(lobbyID,memberID);
+			const response = await res.json();
+			if (!Array.isArray(response)) {
+				throw new Error('Error fetching chat messages, not an array.');
+			}
+			return response; 
+		} catch (error) {
+			throw error;
 		}
-		const response = await res.json();
-		if (!Array.isArray(response)) {
-			throw new Error('Error fetching members, not array of strings.');
-		}
-		return response; 
 	}
 
 	async function loadLobbyName(): Promise<string> {
-		const res = await api.lobbiesNameDetail(lobbyID);
-		if (!res.ok) {
-			throw new Error("Failed to fetch lobby name");
+		try {
+			const res = await api.lobbiesNameDetail(lobbyID);
+			const lobbyName = await res.text()
+			return lobbyName;
+		} catch (error) {
+			throw error;
 		}
-		const lobbyName = await res.text()
-		return lobbyName;
 	}
 	function copyPinToClipboard(pin:string) {
 		navigator.clipboard.writeText(pin)
  	}
 	async function fetchUpdates(): Promise<number[]> {
-		const res = await api.lobbiesMembersUpdatesDetail(lobbyID,memberID);
-		if (!res.ok) {
-			throw new Error("Failed to fetch member list");
-		}
-		const response = await res.json();
-		if (!Array.isArray(response)) {
-			throw new Error('Error fetching members, not array of strings.');
-		}
-		// Map and parse each item to ensure it's a number
-		const parsedResponse = response.map(item => {
-			// Assuming the items are strings that should be parsed to integers
-			const parsedItem = parseInt(item, 10);
-			if (isNaN(parsedItem)) {
-				throw new Error('Data contains non-numeric values');
+		try {
+			const res = await api.lobbiesMembersUpdatesDetail(lobbyID,memberID);
+			const response = await res.json();
+			if (!Array.isArray(response)) {
+				throw new Error('Error fetching updates, not an array.');
 			}
-			return parsedItem;
-		});
-		return parsedResponse;
+			// Map and parse each item to ensure it's a number
+			const parsedResponse = response.map(item => {
+				// Assuming the items are strings that should be parsed to integers
+				const parsedItem = parseInt(item, 10);
+				if (isNaN(parsedItem)) {
+					throw new Error('Data contains non-numeric values');
+				}
+				return parsedItem;
+			});
+			return parsedResponse;
+		} catch (error) {
+			throw error;
+		}	
 	}
 	async function postRoll(tmpDiceType:number,tmpNumberOfDice:number) : Promise<number>{
 		const rollDiceRequest : MainRollDiceRequest = {
@@ -144,13 +148,14 @@
 			MemberID: memberID,
 			NumberOfRolls: tmpNumberOfDice,
 		};
-		const res = await api.lobbiesRolldiceCreate(lobbyID,rollDiceRequest);
-		if (!res.ok) {
-			throw new Error("Failed to post number roll.");
+		try {
+			const res = await api.lobbiesRolldiceCreate(lobbyID,rollDiceRequest);
+			const resultText = await res.text();
+			const resultNumber = parseInt(resultText);
+			return resultNumber;
+		} catch (error) {
+			throw error;
 		}
-		const resultText = await res.text();
-		const resultNumber = parseInt(resultText);
-		return resultNumber;
 	}
 
 	function fetchUpdateRoutine(){
@@ -220,12 +225,12 @@
 		elemChat.scrollTo({ top: elemChat.scrollHeight, behavior });
 	}
 	function formatTime(timestamp?:string) {
-	if (!timestamp) {
-      return "";
-    }
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+		if (!timestamp) {
+			return "";
+		}
+		const date = new Date(timestamp);
+		return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+ 	}
 
 </script>
 

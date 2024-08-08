@@ -147,31 +147,23 @@
 		disableJoinButton=true;
 		try {
 			var userID = await joinLobbyAPICall(tmpRoomPin,tmpUsernameJoin);
-			console.log("Joined lobby",tmpRoomPin);
    		} catch (error) {
-			var errorCode = error as number;
 			console.error('Error joining lobby:', error);
-			//handle case if room doesn't exist
-			if(errorCode === 404 ){
-				const t: ToastSettings = {
-					message: "Room with pin: "+ tmpRoomPin+" doesn't exist.",
+			var errorMessage = "Couldn't join room with pin: "+ tmpRoomPin+".";
+			if(error instanceof Response){
+				if(error.status === 404){
+					errorMessage = "Room with pin: "+ tmpRoomPin+" doesn't exist.";
+				}
+			}
+			const t: ToastSettings = {
+					message: errorMessage,
 					timeout: 3000,
 					hideDismiss: true,
 					background: 'variant-filled-error'
-				};
-				toastStore.trigger(t);
-				disableJoinButton=false;
-				return;
-			}
-			const t: ToastSettings = {
-				message: "Couldn't join room with pin: "+ tmpRoomPin+".",
-				timeout: 3000,
-				hideDismiss: true,
-				background: 'variant-filled-error'
 			};
 			toastStore.trigger(t);
 			disableJoinButton=false;
-			return;
+			return;		
 		}
 		MemberID.set(userID);
 		LobbyID.set(tmpRoomPin);
@@ -185,29 +177,24 @@
 		const lobbyCreateRequest: MainCreateLobbyRequest = {
     		name: lobbyName
 		};
-		const res = await api.lobbiesCreate(lobbyCreateRequest);
-		if (res.ok) {
+		try {
+			const res = await api.lobbiesCreate(lobbyCreateRequest);
 			const lobbyPin =  await res.text();
 			return lobbyPin;
-		} else {
-			throw new Error("Failed to create lobby.");
+		} catch (error) {
+			throw error;
 		}
 	}
 	async function joinLobbyAPICall(pin:string,username:string): Promise<string>{
 		const lobbyJoinREquest: MainJoinLobbyRequest = {
     		nickname: username
 		};
-		//api throws error if http response not ok
 		try {
-			const res = await api.lobbiesMembersCreate(pin,lobbyJoinREquest)
-			if (!res.ok) {
-				throw new Error(res.statusText);
-			}
+			const res = await api.lobbiesMembersCreate(pin,lobbyJoinREquest);
 			var userID =  await res.text();
 			return userID;
 		} catch (error) {
-			const httpResponse = error as HttpResponse<any, any>;
-			throw httpResponse.status;
+			throw error;
 		}
 	}
 </script>
