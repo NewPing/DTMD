@@ -161,7 +161,7 @@ func rollDice(c *gin.Context) {
 		return
 	}
 
-	chatMessage := models.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg, Timestamp: time.Now()}
+	chatMessage := models.ChatMessage{Sender: GetUserNameByID(id, req.MemberID), Message: msg, Timestamp: time.Now().Format(time.RFC3339)}
 	for _, member := range lobby.GetMembers() {
 		if *req.IsPrivateRoll == 0 || member.GetID() == req.MemberID { //if public roll or id = userID
 			member.AddNewChatMessage(chatMessage)

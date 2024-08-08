@@ -6,7 +6,7 @@
 	// Floating UI for Popups
 	import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
 	import { storePopup } from '@skeletonlabs/skeleton';
-	import { Api, type MainRollDiceRequest,type MainChatMessage, type HttpResponse } from '../../dtmd_api';
+	import { Api, type MainRollDiceRequest,type ModelsChatMessage, type HttpResponse } from '../../dtmd_api';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
@@ -35,7 +35,7 @@
 	let tempRollNumber : number;
 	let isRolling = false;
 	let receivedRoll = false;
-	let chatMessages:MainChatMessage[] = [];
+	let chatMessages:ModelsChatMessage[] = [];
 	let elemChat : HTMLElement;
 	//lobbyState
 	let members : string[] = [];
@@ -94,7 +94,7 @@
 		return response; 
 	}
 
-	async function fetchChatMessages(): Promise<MainChatMessage[]> {
+	async function fetchChatMessages(): Promise<ModelsChatMessage[]> {
 		const res = await api.lobbiesMembersMessagesDetail(lobbyID,memberID);
 		if (!res.ok) {
 			throw new Error("Failed to fetch chat messages.");
@@ -219,6 +219,13 @@
 	function scrollChatBottom(behavior?: ScrollBehavior): void {
 		elemChat.scrollTo({ top: elemChat.scrollHeight, behavior });
 	}
+	function formatTime(timestamp?:string) {
+	if (!timestamp) {
+      return "";
+    }
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
 
 </script>
 
@@ -304,10 +311,11 @@
 		</main>
 
         <div bind:this={elemChat} class="bg-surface-500/5 p-4 overflow-y-auto col-span-2">
-			{#each chatMessages as { message, sender }}
+			{#each chatMessages as { message, sender,timestamp }}
 			<div class="card p-4 variant-soft mb-3">
 			  <header class="flex justify-between items-center">
 				<p class="font-bold">{sender}</p>
+				<small class="opacity-50">{formatTime(timestamp)}</small>
 			  </header>
 			  <p style="overflow-wrap: break-word;">{message}</p>
 			</div>

@@ -9,11 +9,6 @@
  * ---------------------------------------------------------------
  */
 
-export interface MainChatMessage {
-	message?: string;
-	sender?: string;
-}
-
 export interface MainCreateLobbyRequest {
 	name: string;
 }
@@ -27,6 +22,12 @@ export interface MainRollDiceRequest {
 	IsPrivateRoll: number;
 	MemberID: string;
 	NumberOfRolls: number;
+}
+
+export interface ModelsChatMessage {
+	message?: string;
+	sender?: string;
+	timestamp?: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -136,9 +137,9 @@ export class HttpClient<SecurityDataType = unknown> {
 				: input,
 		[ContentType.Text]: (input: any) =>
 			input !== null && typeof input !== 'string' ? JSON.stringify(input) : input,
-		[ContentType.FormData]: (input: FormData) =>
-			(Array.from(input.keys()) || []).reduce((formData, key) => {
-				const property = input.get(key);
+		[ContentType.FormData]: (input: any) =>
+			Object.keys(input || {}).reduce((formData, key) => {
+				const property = input[key];
 				formData.append(
 					key,
 					property instanceof Blob
@@ -275,6 +276,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 			}),
 
 		/**
+		 * @description Get the history of all chat messages of a specific lobby
+		 *
+		 * @tags lobby
+		 * @name LobbiesChathistoryDetail
+		 * @summary Get the chat history of a lobby
+		 * @request GET:/api/lobbies/{id}/chathistory
+		 */
+		lobbiesChathistoryDetail: (id: string, params: RequestParams = {}) =>
+			this.request<ModelsChatMessage[], void>({
+				path: `/api/lobbies/${id}/chathistory`,
+				method: 'GET',
+				type: ContentType.Json,
+				format: 'json',
+				...params
+			}),
+
+		/**
 		 * @description get members of a specific lobby by ID
 		 *
 		 * @tags member
@@ -317,7 +335,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
 		 * @request GET:/api/lobbies/{id}/members/{id2}/messages
 		 */
 		lobbiesMembersMessagesDetail: (id: string, id2: string, params: RequestParams = {}) =>
-			this.request<MainChatMessage[], void>({
+			this.request<ModelsChatMessage[], void>({
 				path: `/api/lobbies/${id}/members/${id2}/messages`,
 				method: 'GET',
 				type: ContentType.Json,
