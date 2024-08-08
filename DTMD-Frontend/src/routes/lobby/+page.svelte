@@ -88,6 +88,9 @@
 			loadLobbyName().then((fetchedLobbyName) => {
 				lobbyName = fetchedLobbyName;
 			});
+			fetchAllChatMessages().then((fetchedChatMessages) => {
+				chatMessages = [...chatMessages, ...fetchedChatMessages];
+			});
 			fetchUpdateRoutine();
 		}
 	});
@@ -108,6 +111,18 @@
 	async function fetchChatMessages(): Promise<ModelsChatMessage[]> {
 		try {
 			const res = await api.lobbiesMembersMessagesDetail(lobbyID, memberID);
+			const response = await res.json();
+			if (!Array.isArray(response)) {
+				throw new Error('Error fetching chat messages, not an array.');
+			}
+			return response;
+		} catch (error) {
+			throw error;
+		}
+	}
+	async function fetchAllChatMessages(): Promise<ModelsChatMessage[]> {
+		try {
+			const res = await api.lobbiesChathistoryDetail(lobbyID);
 			const response = await res.json();
 			if (!Array.isArray(response)) {
 				throw new Error('Error fetching chat messages, not an array.');
@@ -334,13 +349,13 @@
 				</div>
 				<button
 					type="button"
-					class="btn btn-lg variant-filled-primary font-semibold"
+					class="btn btn-lg variant-filled-primary font-semibold z-10"
 					on:click={() => startRoll(diceType, numberOfDice)}
 					disabled={isRolling}>Roll!</button
 				>
 				<!-- Big Number -->
-				<div style="margin-top: 100px">&nbsp;</div>
-				<div class="font-medium select-none" style="font-size: 240px;">
+				<div style="margin-top: 80px">&nbsp;</div>
+				<div class="font-medium select-none z-0" style="font-size: 240px;">
 					{numberRolled}
 				</div>
 			</div>
